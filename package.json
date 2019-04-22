@@ -1,0 +1,23 @@
+{
+  "name": "streamdeck-util",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zoton2/node-streamdeck-util.git"
+  },
+  "author": "zoton2",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zoton2/node-streamdeck-util/issues"
+  },
+  "homepage": "https://github.com/zoton2/node-streamdeck-util#readme",
+  "devDependencies": {
+    "tslint": "^5.16.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "typescript": "^3.4.4"
+  }
+}

@@ -4,6 +4,7 @@ import * as url from 'url';
 
 class StreamDeck extends EventEmitter {
   wss: ws.Server;
+  wsConnection: ws | undefined;
   pluginUUID: string | undefined;
   buttonLocations: object = {};
 
@@ -11,11 +12,13 @@ class StreamDeck extends EventEmitter {
     { key: 'DEFAULT_KEY', port: 9091, debug: false }) {
     super();
 
+    // Create WebSocket server.
     this.wss = new ws.Server({ port: opts.port });
     if (opts.debug) {
       console.log(`[streamdeck-util] WebSocket server created on port ${opts.port}.`);
     }
 
+    // Triggered when client connects.
     this.wss.on('connection', (ws, req) => {
       if (opts.debug) {
         console.log('[streamdeck-util] WebSocket client connected.');
@@ -39,6 +42,17 @@ class StreamDeck extends EventEmitter {
         return;
       }
 
+      // Disconnect client if one is already connected.
+      if (this.wsConnection && this.wsConnection.readyState !== 3) {
+        if (opts.debug) {
+          // tslint:disable-next-line: max-line-length
+          console.log('[streamdeck-util] WebSocket client connection refused due to more than 1 connection.');
+        }
+        ws.close();
+        return;
+      }
+
+      this.wsConnection = ws;
       this.emit('open');
 
       ws.on('message', (message) => {
@@ -60,9 +74,26 @@ class StreamDeck extends EventEmitter {
         }
         this.buttonLocations = {};
         this.pluginUUID = undefined;
+        this.wsConnection = undefined;
         this.emit('close', code, reason);
       });
     });
+  }
+
+  getButtonLocations(): object {
+    return this.buttonLocations;
+  }
+
+  getPluginUUID(): string | undefined {
+    return this.pluginUUID;
+  }
+
+  send(data: object): boolean {
+    if (this.wsConnection && this.wsConnection.readyState !== 3) {
+      this.wsConnection.send(JSON.stringify(data));
+      return true;
+    }
+    return false;
   }
 }
 

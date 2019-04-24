@@ -31,10 +31,12 @@ var StreamDeck = /** @class */ (function (_super) {
         if (opts === void 0) { opts = { key: 'DEFAULT_KEY', port: 9091, debug: false }; }
         var _this = _super.call(this) || this;
         _this.buttonLocations = {};
+        // Create WebSocket server.
         _this.wss = new ws_1.default.Server({ port: opts.port });
         if (opts.debug) {
             console.log("[streamdeck-util] WebSocket server created on port " + opts.port + ".");
         }
+        // Triggered when client connects.
         _this.wss.on('connection', function (ws, req) {
             if (opts.debug) {
                 console.log('[streamdeck-util] WebSocket client connected.');
@@ -56,6 +58,16 @@ var StreamDeck = /** @class */ (function (_super) {
                 ws.close();
                 return;
             }
+            // Disconnect client if one is already connected.
+            if (_this.wsConnection && _this.wsConnection.readyState !== 3) {
+                if (opts.debug) {
+                    // tslint:disable-next-line: max-line-length
+                    console.log('[streamdeck-util] WebSocket client connection refused due to more than 1 connection.');
+                }
+                ws.close();
+                return;
+            }
+            _this.wsConnection = ws;
             _this.emit('open');
             ws.on('message', function (message) {
                 _this.pluginUUID = '';
@@ -74,11 +86,25 @@ var StreamDeck = /** @class */ (function (_super) {
                 }
                 _this.buttonLocations = {};
                 _this.pluginUUID = undefined;
+                _this.wsConnection = undefined;
                 _this.emit('close', code, reason);
             });
         });
         return _this;
     }
+    StreamDeck.prototype.getButtonLocations = function () {
+        return this.buttonLocations;
+    };
+    StreamDeck.prototype.getPluginUUID = function () {
+        return this.pluginUUID;
+    };
+    StreamDeck.prototype.send = function (data) {
+        if (this.wsConnection && this.wsConnection.readyState !== 3) {
+            this.wsConnection.send(JSON.stringify(data));
+            return true;
+        }
+        return false;
+    };
     return StreamDeck;
 }(events_1.EventEmitter));
 module.exports = StreamDeck;

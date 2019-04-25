@@ -1,1 +1,4 @@
 node_modules/
+streamdeck-plugin/Release/com.zoton2.example.streamDeckPlugin
+streamdeck-plugin/DistributionTool.exe
+test.js

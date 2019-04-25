@@ -55,14 +55,25 @@ class StreamDeck extends EventEmitter {
       this.wsConnection = ws;
       this.emit('open');
 
-      ws.on('message', (message) => {
-        this.pluginUUID = '';
-        // got message
+      ws.on('message', (message: string) => {
+        const msg = JSON.parse(message);
+        if (msg.type === 'init') {
+          if (opts.debug) {
+            console.log(`[streamdeck-util] WebSocket received plugin UUID: ${this.pluginUUID}`);
+          }
+          this.pluginUUID = msg.data.pluginUUID;
+        }
+        if (msg.type === 'buttonLocationsUpdated') {
+          if (opts.debug) {
+            console.log('[streamdeck-util] WebSocket received updated button locations.');
+          }
+          this.buttonLocations = msg.data.buttonLocations;
+        }
       });
 
       ws.on('error', (err) => {
         if (opts.debug) {
-          console.log(`[streamdeck-util] WebSocket client error (${err}).`);
+          console.log(`[streamdeck-util] WebSocket client connection error (${err}).`);
         }
         this.emit('error', err);
       });
@@ -70,7 +81,7 @@ class StreamDeck extends EventEmitter {
       ws.on('close', (code, reason) => {
         if (opts.debug) {
           // tslint:disable-next-line: max-line-length
-          console.log(`[streamdeck-util] WebSocket client closed (${code}${(reason) ? `, ${reason}` : ''}).`);
+          console.log(`[streamdeck-util] WebSocket client connection closed (${code}${(reason) ? `, ${reason}` : ''}).`);
         }
         this.buttonLocations = {};
         this.pluginUUID = undefined;

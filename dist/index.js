@@ -70,19 +70,30 @@ var StreamDeck = /** @class */ (function (_super) {
             _this.wsConnection = ws;
             _this.emit('open');
             ws.on('message', function (message) {
-                _this.pluginUUID = '';
-                // got message
+                var msg = JSON.parse(message);
+                if (msg.type === 'init') {
+                    if (opts.debug) {
+                        console.log("[streamdeck-util] WebSocket received plugin UUID: " + _this.pluginUUID);
+                    }
+                    _this.pluginUUID = msg.data.pluginUUID;
+                }
+                if (msg.type === 'buttonLocationsUpdated') {
+                    if (opts.debug) {
+                        console.log('[streamdeck-util] WebSocket received updated button locations.');
+                    }
+                    _this.buttonLocations = msg.data.buttonLocations;
+                }
             });
             ws.on('error', function (err) {
                 if (opts.debug) {
-                    console.log("[streamdeck-util] WebSocket client error (" + err + ").");
+                    console.log("[streamdeck-util] WebSocket client connection error (" + err + ").");
                 }
                 _this.emit('error', err);
             });
             ws.on('close', function (code, reason) {
                 if (opts.debug) {
                     // tslint:disable-next-line: max-line-length
-                    console.log("[streamdeck-util] WebSocket client closed (" + code + ((reason) ? ", " + reason : '') + ").");
+                    console.log("[streamdeck-util] WebSocket client connection closed (" + code + ((reason) ? ", " + reason : '') + ").");
                 }
                 _this.buttonLocations = {};
                 _this.pluginUUID = undefined;

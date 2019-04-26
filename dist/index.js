@@ -25,8 +25,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var events_1 = require("events");
 var ws_1 = __importDefault(require("ws"));
 var url = __importStar(require("url"));
+var util = __importStar(require("util"));
 var StreamDeck = /** @class */ (function (_super) {
     __extends(StreamDeck, _super);
+    /**
+     * New instance of the streamdeck-util helper.
+     * @param opts Options object (see below).
+     * @param opts.key Secret key that will be used to connect to this server.
+     * @param opts.port Port that this server will listen on for connections.
+     * @param opts.debug Turn on debug logging to help development.
+     */
     function StreamDeck(opts) {
         if (opts === void 0) { opts = { key: 'DEFAULT_KEY', port: 9091, debug: false }; }
         var _this = _super.call(this) || this;
@@ -73,7 +81,7 @@ var StreamDeck = /** @class */ (function (_super) {
                 var msg = JSON.parse(message);
                 if (msg.type === 'init') {
                     if (opts.debug) {
-                        console.log("[streamdeck-util] WebSocket received plugin UUID: " + _this.pluginUUID);
+                        console.log("[streamdeck-util] WebSocket received plugin UUID: " + msg.data.pluginUUID);
                     }
                     _this.pluginUUID = msg.data.pluginUUID;
                 }
@@ -82,6 +90,14 @@ var StreamDeck = /** @class */ (function (_super) {
                         console.log('[streamdeck-util] WebSocket received updated button locations.');
                     }
                     _this.buttonLocations = msg.data.buttonLocations;
+                }
+                if (msg.type === 'rawSD') {
+                    if (opts.debug) {
+                        // tslint:disable-next-line: max-line-length
+                        console.log('[streamdeck-util] WebSocket received raw Stream Deck message:\n%s', util.inspect(msg.data, { depth: null }));
+                    }
+                    _this.emit(msg.data.event, msg.data);
+                    _this.emit('message', msg.data);
                 }
             });
             ws.on('error', function (err) {
@@ -103,18 +119,36 @@ var StreamDeck = /** @class */ (function (_super) {
         });
         return _this;
     }
+    /**
+     * Gets the buttonLocations object as received from the Stream Deck plugin.
+     */
     StreamDeck.prototype.getButtonLocations = function () {
         return this.buttonLocations;
     };
+    /**
+     * Gets the pluginUUID if set.
+     */
     StreamDeck.prototype.getPluginUUID = function () {
         return this.pluginUUID;
     };
+    /**
+     * Sends message to the Stream Deck WebSocket connection.
+     * as documented on https://developer.elgato.com/documentation/stream-deck/sdk/events-sent/
+     * Data will be stringified for you.
+     * @param data Object formatted to send to the Stream Deck WebSocket connection.
+     */
     StreamDeck.prototype.send = function (data) {
-        if (this.wsConnection && this.wsConnection.readyState !== 3) {
+        if (this.wsConnection && this.wsConnection.readyState === 1) {
             this.wsConnection.send(JSON.stringify(data));
             return true;
         }
         return false;
+    };
+    /**
+     * Get raw WebSocket connection to the plugin backend if available.
+     */
+    StreamDeck.prototype.getWSConnection = function () {
+        return this.wsConnection;
     };
     return StreamDeck;
 }(events_1.EventEmitter));

@@ -77,8 +77,8 @@ function connectToSDWS() {
 			buttonLocations[device][payload.coordinates.row][payload.coordinates.column].state = payload.state;
 		}
 
-		if (['willAppear', 'willDisappear', 'titleParametersDidChange'].includes(event) && serverWS && serverWS.readyState !== 3) {
-			serverWS.send(JSON.stringify({type: 'buttonLocationsUpdated', data: {buttonLocations: buttonLocations}}));
+		if (['willAppear', 'willDisappear', 'titleParametersDidChange'].includes(event)) {
+			sendToServerWS('buttonLocationsUpdated', {buttonLocations: buttonLocations});
 		}
 
 		// Update global settings if needed, usually for first use.
@@ -90,8 +90,7 @@ function connectToSDWS() {
 			connectToServerWS();
 		}
 
-		console.log(data);
-		// do something with the messages received here
+		sendToServerWS('rawSD', data);
 	});
 }
 
@@ -109,8 +108,8 @@ function connectToServerWS() {
 	// Initalise Node.js WebSocket connection.
 	serverWS.addEventListener('open', () => {
 		console.info('Connection to Node.js server successful.');
-		serverWS.send(JSON.stringify({type: 'init', data: {pluginUUID: connectSocketData.pluginUUID}}));
-		serverWS.send(JSON.stringify({type: 'buttonLocationsUpdated', data: {buttonLocations: buttonLocations}}));
+		sendToServerWS('init', {pluginUUID: connectSocketData.pluginUUID});
+		sendToServerWS('buttonLocationsUpdated', {buttonLocations: buttonLocations});
 		toggleBackendConnectionStatus(true);
 	}, {once: true});
 
@@ -122,10 +121,24 @@ function connectToServerWS() {
 
 	serverWS.addEventListener('message', e => {
 		const data = e.data;
-		console.log(data);
+		sendToSDWS(data);
 	});
 }
 
+// Helper function to send messages to Node.js WebSocket server if connection is ready.
+function sendToServerWS(type, data) {
+	if (serverWS && serverWS.readyState === 1) {
+		serverWS.send(JSON.stringify({type: type, data: data}));
+	}
+}
+// Helper function to send messages to the Stream Deck WebSocket server if connection is ready.
+function sendToSDWS(data) {
+	if (sdWS && sdWS.readyState === 1) {
+		sdWS.send(data);
+	}
+}
+
+// Toggles global setting for connection status.
 function toggleBackendConnectionStatus(connected) {
 	globalSettings.connected = connected;
 	sdWS.send(JSON.stringify({event: 'setGlobalSettings', context: connectSocketData.pluginUUID, payload: globalSettings}));

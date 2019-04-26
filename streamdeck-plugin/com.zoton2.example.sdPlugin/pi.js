@@ -49,16 +49,13 @@ function connectToSDWS() {
 		if (data.event === 'didReceiveGlobalSettings') {
 			globalSettings = data.payload.settings;
 		}
-
-		console.log(data);
-		// do something with the messages received here
 	});
 }
 
 // Wait for the document to fully load before doing this stuff.
 document.addEventListener('DOMContentLoaded', e => {
 	document.getElementById('settingsButton').addEventListener('click', e => {
-		// The PI *should* receive the updated global settings when the backend updates themm
+		// The PI *should* receive the updated global settings when the backend updates them
 		// but when I tested it, it didn't work that way. Getting them manually while opening settings for now.
 		sdWS.send(JSON.stringify({event: 'getGlobalSettings', context: connectSocketData.pluginUUID}));
 		setTimeout(() => window.open('settings.html'), 100);

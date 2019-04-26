@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 import ws from 'ws';
 import * as url from 'url';
+import * as util from 'util';
 
 class StreamDeck extends EventEmitter {
   wss: ws.Server;
@@ -8,6 +9,13 @@ class StreamDeck extends EventEmitter {
   pluginUUID: string | undefined;
   buttonLocations: object = {};
 
+  /**
+   * New instance of the streamdeck-util helper.
+   * @param opts Options object (see below).
+   * @param opts.key Secret key that will be used to connect to this server.
+   * @param opts.port Port that this server will listen on for connections.
+   * @param opts.debug Turn on debug logging to help development.
+   */
   constructor(opts: {key?: string; port?: number, debug?: boolean} =
     { key: 'DEFAULT_KEY', port: 9091, debug: false }) {
     super();
@@ -59,7 +67,7 @@ class StreamDeck extends EventEmitter {
         const msg = JSON.parse(message);
         if (msg.type === 'init') {
           if (opts.debug) {
-            console.log(`[streamdeck-util] WebSocket received plugin UUID: ${this.pluginUUID}`);
+            console.log(`[streamdeck-util] WebSocket received plugin UUID: ${msg.data.pluginUUID}`);
           }
           this.pluginUUID = msg.data.pluginUUID;
         }
@@ -68,6 +76,14 @@ class StreamDeck extends EventEmitter {
             console.log('[streamdeck-util] WebSocket received updated button locations.');
           }
           this.buttonLocations = msg.data.buttonLocations;
+        }
+        if (msg.type === 'rawSD') {
+          if (opts.debug) {
+            // tslint:disable-next-line: max-line-length
+            console.log('[streamdeck-util] WebSocket received raw Stream Deck message:\n%s', util.inspect(msg.data, { depth: null }));
+          }
+          this.emit(msg.data.event, msg.data);
+          this.emit('message', msg.data);
         }
       });
 
@@ -91,20 +107,39 @@ class StreamDeck extends EventEmitter {
     });
   }
 
+  /**
+   * Gets the buttonLocations object as received from the Stream Deck plugin.
+   */
   getButtonLocations(): object {
     return this.buttonLocations;
   }
 
+  /**
+   * Gets the pluginUUID if set.
+   */
   getPluginUUID(): string | undefined {
     return this.pluginUUID;
   }
 
+  /**
+   * Sends message to the Stream Deck WebSocket connection.
+   * as documented on https://developer.elgato.com/documentation/stream-deck/sdk/events-sent/
+   * Data will be stringified for you.
+   * @param data Object formatted to send to the Stream Deck WebSocket connection.
+   */
   send(data: object): boolean {
-    if (this.wsConnection && this.wsConnection.readyState !== 3) {
+    if (this.wsConnection && this.wsConnection.readyState === 1) {
       this.wsConnection.send(JSON.stringify(data));
       return true;
     }
     return false;
+  }
+
+  /**
+   * Get raw WebSocket connection to the plugin backend if available.
+   */
+  getWSConnection(): ws | undefined {
+    return this.wsConnection;
   }
 }
 

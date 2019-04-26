@@ -1,6 +1,6 @@
 # node-streamdeck-util
 
-*Bundle still under heavy development, use it at your own risk!*
+*Package still under heavy development, use it at your own risk!*
 
 Node.js package to help you interface with a Stream Deck plugin in an external script.
 
@@ -12,7 +12,7 @@ Inside the included plugin, in the default Property Inspector for each action, y
 
 ![Settings Dialog](img/settings-dialog.png)
 
-Currently this bundle is only designed/tested to work with the full sized Stream Deck with 15 LCD keys; the Stream Deck Mini with 6 LCD keys may also work but not guaranteed.
+Currently this package is only designed/tested to work with the full sized Stream Deck with 15 LCD keys; the Stream Deck Mini with 6 LCD keys may also work but not guaranteed.
 
 ### Example
 

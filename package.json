@@ -1,5 +1,6 @@
 {
   "name": "streamdeck-util",
+  "description": "Node.js package for helping your scripts interface with the official Stream Deck application.",
   "version": "0.1.0",
   "main": "dist/index.js",
   "scripts": {
@@ -9,6 +10,15 @@
     "type": "git",
     "url": "git+https://github.com/zoton2/node-streamdeck-util.git"
   },
+  "keywords": [
+    "elgato",
+    "stream",
+    "deck",
+    "streamdeck",
+    "utility",
+    "util",
+    "helper"
+  ],
   "author": "zoton2",
   "license": "MIT",
   "bugs": {

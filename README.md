@@ -81,7 +81,7 @@ sd.on('keyDown', (msg) => {
 
 Because of how you may not have a constant connection to the Stream Deck application to be able to receive all of the `willAppear`/`willDisappear` messages and so on, the barebones plugin included keeps track of the location of the buttons along with other things, for example the title. This is updated in this package's side both on initial connection and any time it changes on the plugin side.
 
-This is an object, that stores the locations of currently visible buttons related to the connected plugin, structed like this...
+This is an object, that stores the locations of currently visible buttons related to the connected plugin, structured like this...
 
 ```
 {

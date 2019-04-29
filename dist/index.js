@@ -39,6 +39,7 @@ var StreamDeck = /** @class */ (function (_super) {
         if (opts === void 0) { opts = { key: 'DEFAULT_KEY', port: 9091, debug: false }; }
         var _this = _super.call(this) || this;
         _this.buttonLocations = {};
+        _this.init = 0;
         // Create WebSocket server.
         _this.wss = new ws_1.default.Server({ port: opts.port });
         if (opts.debug) {
@@ -84,12 +85,24 @@ var StreamDeck = /** @class */ (function (_super) {
                         console.log("[streamdeck-util] WebSocket received plugin UUID: " + msg.data.pluginUUID);
                     }
                     _this.pluginUUID = msg.data.pluginUUID;
+                    if (_this.init < 2) {
+                        _this.init += 1;
+                        if (_this.init >= 2) {
+                            _this.emit('init');
+                        }
+                    }
                 }
                 if (msg.type === 'buttonLocationsUpdated') {
                     if (opts.debug) {
                         console.log('[streamdeck-util] WebSocket received updated button locations.');
                     }
                     _this.buttonLocations = msg.data.buttonLocations;
+                    if (_this.init < 2) {
+                        _this.init += 1;
+                        if (_this.init >= 2) {
+                            _this.emit('init');
+                        }
+                    }
                 }
                 if (msg.type === 'rawSD') {
                     if (opts.debug) {
@@ -114,6 +127,7 @@ var StreamDeck = /** @class */ (function (_super) {
                 _this.buttonLocations = {};
                 _this.pluginUUID = undefined;
                 _this.wsConnection = undefined;
+                _this.init = 0;
                 _this.emit('close', code, reason);
             });
         });

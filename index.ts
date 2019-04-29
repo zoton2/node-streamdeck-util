@@ -25,6 +25,7 @@ class StreamDeck extends EventEmitter {
   wsConnection: ws | undefined;
   pluginUUID: string | undefined;
   buttonLocations: ButtonLocations = {};
+  init: number = 0;
 
   /**
    * New instance of the streamdeck-util helper.
@@ -87,12 +88,24 @@ class StreamDeck extends EventEmitter {
             console.log(`[streamdeck-util] WebSocket received plugin UUID: ${msg.data.pluginUUID}`);
           }
           this.pluginUUID = msg.data.pluginUUID;
+          if (this.init < 2) {
+            this.init += 1;
+            if (this.init >= 2) {
+              this.emit('init');
+            }
+          }
         }
         if (msg.type === 'buttonLocationsUpdated') {
           if (opts.debug) {
             console.log('[streamdeck-util] WebSocket received updated button locations.');
           }
           this.buttonLocations = msg.data.buttonLocations;
+          if (this.init < 2) {
+            this.init += 1;
+            if (this.init >= 2) {
+              this.emit('init');
+            }
+          }
         }
         if (msg.type === 'rawSD') {
           if (opts.debug) {
@@ -119,6 +132,7 @@ class StreamDeck extends EventEmitter {
         this.buttonLocations = {};
         this.pluginUUID = undefined;
         this.wsConnection = undefined;
+        this.init = 0;
         this.emit('close', code, reason);
       });
     });

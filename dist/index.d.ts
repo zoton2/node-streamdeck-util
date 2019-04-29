@@ -21,6 +21,7 @@ declare class StreamDeck extends EventEmitter {
     wsConnection: ws | undefined;
     pluginUUID: string | undefined;
     buttonLocations: ButtonLocations;
+    init: number;
     /**
      * New instance of the streamdeck-util helper.
      * @param opts Options object (see below).

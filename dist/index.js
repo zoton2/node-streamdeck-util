@@ -183,6 +183,11 @@ var StreamDeck = /** @class */ (function (_super) {
         });
         return buttons;
     };
+    /**
+     * Update a button's text by it's context.
+     * @param context Context of the button.
+     * @param text What you want to change the text to.
+     */
     StreamDeck.prototype.updateButtonText = function (context, text) {
         this.send({
             context: context,

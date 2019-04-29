@@ -4,7 +4,7 @@ import ws from 'ws';
 interface ButtonLocations {
     [device: string]: {
         [row: string]: {
-            [column: string]: ButtonObject;
+            [column: string]: ButtonObject | null;
         };
     };
 }

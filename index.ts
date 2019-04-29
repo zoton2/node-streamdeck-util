@@ -6,7 +6,7 @@ import * as util from 'util';
 interface ButtonLocations {
   [device: string]: {
     [row: string]: {
-      [column: string]: ButtonObject,
+      [column: string]: ButtonObject | null,
     }
   }
 }
@@ -183,7 +183,7 @@ class StreamDeck extends EventEmitter {
       Object.keys(device).forEach((row) => {
         Object.keys(row).forEach((column) => {
           const button = this.buttonLocations[device][row][column];
-          if (button.action === action) {
+          if (button && button.action === action) {
             buttons.push(button);
           }
         });

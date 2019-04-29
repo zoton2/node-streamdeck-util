@@ -2,7 +2,7 @@
   "name": "streamdeck-util",
   "description": "Node.js package to help your Node.js scripts easily interface with an official Stream Deck application plugin.",
   "version": "0.1.1",
-  "main": "dist/index.js",
+  "main": "dist/index",
   "scripts": {
     "build": "npx tsc -b tsconfig.json"
   },

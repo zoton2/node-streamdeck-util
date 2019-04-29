@@ -116,6 +116,7 @@ function connectToServerWS() {
 	serverWS.addEventListener('close', e => {
 		console.warn(`Connection to Node.js server closed (${e.code}).`);
 		toggleBackendConnectionStatus(false);
+		clearTimeout(serverWSReconTimeout);
 		serverWSReconTimeout = setTimeout(connectToServerWS, 5000);
 	}, {once: true});
 

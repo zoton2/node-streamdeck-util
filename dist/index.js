@@ -150,6 +150,34 @@ var StreamDeck = /** @class */ (function (_super) {
     StreamDeck.prototype.getWSConnection = function () {
         return this.wsConnection;
     };
+    /**
+     * Get an array of all the buttons that are the specified action.
+     * @param action Name of the action you're looking for.
+     */
+    StreamDeck.prototype.findButtonsWithAction = function (action) {
+        var _this = this;
+        var buttons = [];
+        Object.keys(this.buttonLocations).forEach(function (device) {
+            Object.keys(device).forEach(function (row) {
+                Object.keys(row).forEach(function (column) {
+                    var button = _this.buttonLocations[device][row][column];
+                    if (button.action === action) {
+                        buttons.push(button);
+                    }
+                });
+            });
+        });
+        return buttons;
+    };
+    StreamDeck.prototype.updateButtonText = function (context, text) {
+        this.send({
+            context: context,
+            event: 'setTitle',
+            payload: {
+                title: text,
+            },
+        });
+    };
     return StreamDeck;
 }(events_1.EventEmitter));
 module.exports = StreamDeck;

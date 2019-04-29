@@ -1,11 +1,26 @@
 /// <reference types="node" />
 import { EventEmitter } from 'events';
 import ws from 'ws';
+interface ButtonLocations {
+    [device: string]: {
+        [row: string]: {
+            [column: string]: ButtonObject;
+        };
+    };
+}
+interface ButtonObject {
+    context: string;
+    action: string;
+    title: string;
+    isInMultiAction: boolean;
+    state: number;
+    titleParameters: object;
+}
 declare class StreamDeck extends EventEmitter {
     wss: ws.Server;
     wsConnection: ws | undefined;
     pluginUUID: string | undefined;
-    buttonLocations: object;
+    buttonLocations: ButtonLocations;
     /**
      * New instance of the streamdeck-util helper.
      * @param opts Options object (see below).
@@ -37,5 +52,11 @@ declare class StreamDeck extends EventEmitter {
      * Get raw WebSocket connection to the plugin backend if available.
      */
     getWSConnection(): ws | undefined;
+    /**
+     * Get an array of all the buttons that are the specified action.
+     * @param action Name of the action you're looking for.
+     */
+    findButtonsWithAction(action: string): ButtonObject[];
+    updateButtonText(context: string, text: string): void;
 }
 export = StreamDeck;

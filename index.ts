@@ -3,11 +3,28 @@ import ws from 'ws';
 import * as url from 'url';
 import * as util from 'util';
 
+interface ButtonLocations {
+  [device: string]: {
+    [row: string]: {
+      [column: string]: ButtonObject,
+    }
+  }
+}
+
+interface ButtonObject {
+  context: string;
+  action: string;
+  title: string;
+  isInMultiAction: boolean;
+  state: number;
+  titleParameters: object;
+}
+
 class StreamDeck extends EventEmitter {
   wss: ws.Server;
   wsConnection: ws | undefined;
   pluginUUID: string | undefined;
-  buttonLocations: object = {};
+  buttonLocations: ButtonLocations = {};
 
   /**
    * New instance of the streamdeck-util helper.
@@ -140,6 +157,35 @@ class StreamDeck extends EventEmitter {
    */
   getWSConnection(): ws | undefined {
     return this.wsConnection;
+  }
+
+  /**
+   * Get an array of all the buttons that are the specified action.
+   * @param action Name of the action you're looking for.
+   */
+  findButtonsWithAction(action: string): ButtonObject[] {
+    const buttons: ButtonObject[] = [];
+    Object.keys(this.buttonLocations).forEach((device) => {
+      Object.keys(device).forEach((row) => {
+        Object.keys(row).forEach((column) => {
+          const button = this.buttonLocations[device][row][column];
+          if (button.action === action) {
+            buttons.push(button);
+          }
+        });
+      });
+    });
+    return buttons;
+  }
+
+  updateButtonText(context: string, text: string) {
+    this.send({
+      context,
+      event: 'setTitle',
+      payload: {
+        title: text,
+      },
+    });
   }
 }
 

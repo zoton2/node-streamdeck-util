@@ -180,8 +180,8 @@ class StreamDeck extends EventEmitter {
   findButtonsWithAction(action: string): ButtonObject[] {
     const buttons: ButtonObject[] = [];
     Object.keys(this.buttonLocations).forEach((device) => {
-      Object.keys(device).forEach((row) => {
-        Object.keys(row).forEach((column) => {
+      Object.keys(this.buttonLocations[device]).forEach((row) => {
+        Object.keys(this.buttonLocations[device][row]).forEach((column) => {
           const button = this.buttonLocations[device][row][column];
           if (button && button.action === action) {
             buttons.push(button);

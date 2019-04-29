@@ -172,8 +172,8 @@ var StreamDeck = /** @class */ (function (_super) {
         var _this = this;
         var buttons = [];
         Object.keys(this.buttonLocations).forEach(function (device) {
-            Object.keys(device).forEach(function (row) {
-                Object.keys(row).forEach(function (column) {
+            Object.keys(_this.buttonLocations[device]).forEach(function (row) {
+                Object.keys(_this.buttonLocations[device][row]).forEach(function (column) {
                     var button = _this.buttonLocations[device][row][column];
                     if (button && button.action === action) {
                         buttons.push(button);

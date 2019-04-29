@@ -2,7 +2,8 @@
   "name": "streamdeck-util",
   "description": "Node.js package to help your Node.js scripts easily interface with an official Stream Deck application plugin.",
   "version": "0.1.1",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "npx tsc -b tsconfig.json"
   },
@@ -26,13 +27,13 @@
   },
   "homepage": "https://github.com/zoton2/node-streamdeck-util#readme",
   "devDependencies": {
-    "@types/node": "^11.13.7",
-    "@types/ws": "^6.0.1",
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
     "typescript": "^3.4.4"
   },
   "dependencies": {
-    "ws": "^6.2.1"
+    "ws": "^6.2.1",
+    "@types/node": "^11.13.7",
+    "@types/ws": "^6.0.1"
   }
 }

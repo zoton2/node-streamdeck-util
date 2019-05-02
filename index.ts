@@ -7,8 +7,8 @@ interface ButtonLocations {
   [device: string]: {
     [row: string]: {
       [column: string]: ButtonObject | null,
-    }
-  }
+    };
+  };
 }
 
 interface ButtonObject {

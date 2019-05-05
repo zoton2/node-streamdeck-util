@@ -28,10 +28,13 @@ Technically, this package sets up a simple WebSocket server that the barebones p
 var StreamDeck = require('streamdeck-util');
 
 // Create new instance of the utility.
+var sd = new StreamDeck();
+
+// Start listening for connections from the Stream Deck plugin.
 // key - the secret key to authenticate the connection, defaults to DEFAULT_KEY
 // port - the port the connection will use, defaults to 9091
 // debug - if you want to print debug messages, useful for development
-var sd = new StreamDeck({
+sd.listen({
   key: 'EXAMPLE_KEY',
   port: 1234,
   debug: true

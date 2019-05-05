@@ -56,7 +56,7 @@ interface StreamDeck {
 }
 
 class StreamDeck extends EventEmitter {
-  wss: ws.Server;
+  wss: ws.Server | undefined;
   wsConnection: ws | undefined;
   pluginUUID: string | undefined;
   buttonLocations: ButtonLocations = {};
@@ -64,15 +64,20 @@ class StreamDeck extends EventEmitter {
 
   /**
    * New instance of the streamdeck-util helper.
+   */
+  constructor() {
+    super();
+  }
+
+  /**
+   * Start listening for connections from the Stream Deck plugin.
    * @param opts Options object (see below).
    * @param opts.key Secret key that will be used to connect to this server.
    * @param opts.port Port that this server will listen on for connections.
    * @param opts.debug Turn on debug logging to help development.
    */
-  constructor(opts: {key?: string; port?: number, debug?: boolean} =
+  listen(opts: {key?: string; port?: number, debug?: boolean} =
     { key: 'DEFAULT_KEY', port: 9091, debug: false }) {
-    super();
-
     // Create WebSocket server.
     this.wss = new ws.Server({ port: opts.port });
     if (opts.debug) {

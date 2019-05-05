@@ -30,23 +30,30 @@ var StreamDeck = /** @class */ (function (_super) {
     __extends(StreamDeck, _super);
     /**
      * New instance of the streamdeck-util helper.
+     */
+    function StreamDeck() {
+        var _this = _super.call(this) || this;
+        _this.buttonLocations = {};
+        _this.init = 0;
+        return _this;
+    }
+    /**
+     * Start listening for connections from the Stream Deck plugin.
      * @param opts Options object (see below).
      * @param opts.key Secret key that will be used to connect to this server.
      * @param opts.port Port that this server will listen on for connections.
      * @param opts.debug Turn on debug logging to help development.
      */
-    function StreamDeck(opts) {
+    StreamDeck.prototype.listen = function (opts) {
+        var _this = this;
         if (opts === void 0) { opts = { key: 'DEFAULT_KEY', port: 9091, debug: false }; }
-        var _this = _super.call(this) || this;
-        _this.buttonLocations = {};
-        _this.init = 0;
         // Create WebSocket server.
-        _this.wss = new ws_1.default.Server({ port: opts.port });
+        this.wss = new ws_1.default.Server({ port: opts.port });
         if (opts.debug) {
             console.log("[streamdeck-util] WebSocket server created on port " + opts.port + ".");
         }
         // Triggered when client connects.
-        _this.wss.on('connection', function (ws, req) {
+        this.wss.on('connection', function (ws, req) {
             if (opts.debug) {
                 console.log('[streamdeck-util] WebSocket client connected.');
             }
@@ -131,8 +138,7 @@ var StreamDeck = /** @class */ (function (_super) {
                 _this.emit('close', code, reason);
             });
         });
-        return _this;
-    }
+    };
     /**
      * Gets the buttonLocations object as received from the Stream Deck plugin.
      */

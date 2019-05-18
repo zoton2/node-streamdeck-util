@@ -1,39 +1,39 @@
 {
   "name": "streamdeck-util",
-  "description": "Node.js package to help your Node.js scripts easily interface with an official Stream Deck application plugin.",
   "version": "0.3.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "npx tsc -b tsconfig.json"
+  "description": "Node.js package to help your Node.js scripts easily interface with an official Stream Deck application plugin.",
+  "keywords": [
+    "deck",
+    "elgato",
+    "helper",
+    "stream",
+    "streamdeck",
+    "util",
+    "utility"
+  ],
+  "homepage": "https://github.com/zoton2/node-streamdeck-util#readme",
+  "bugs": {
+    "url": "https://github.com/zoton2/node-streamdeck-util/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zoton2/node-streamdeck-util.git"
   },
-  "keywords": [
-    "elgato",
-    "stream",
-    "deck",
-    "streamdeck",
-    "utility",
-    "util",
-    "helper"
-  ],
-  "author": "zoton2",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/zoton2/node-streamdeck-util/issues"
+  "author": "zoton2",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc -b tsconfig.json"
   },
-  "homepage": "https://github.com/zoton2/node-streamdeck-util#readme",
+  "dependencies": {
+    "@types/node": "^11.13.7",
+    "@types/ws": "^6.0.1",
+    "ws": "^6.2.1"
+  },
   "devDependencies": {
     "tslint": "^5.16.0",
     "tslint-config-airbnb": "^5.11.1",
     "typescript": "^3.4.4"
-  },
-  "dependencies": {
-    "ws": "^6.2.1",
-    "@types/node": "^11.13.7",
-    "@types/ws": "^6.0.1"
   }
 }

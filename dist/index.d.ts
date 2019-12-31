@@ -53,10 +53,6 @@ declare class StreamDeck extends EventEmitter {
     buttonLocations: ButtonLocations;
     init: number;
     /**
-     * New instance of the streamdeck-util helper.
-     */
-    constructor();
-    /**
      * Start listening for connections from the Stream Deck plugin.
      * @param opts Options object (see below).
      * @param opts.key Secret key that will be used to connect to this server.

@@ -24,16 +24,20 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "npx tsc -b tsconfig.json"
+    "autofix": "npx eslint --fix --ext .ts src",
+    "build": "npx tsc -b tsconfig.json",
+    "watch": "npx tsc -b tsconfig.json -w"
   },
   "dependencies": {
-    "@types/node": "^11.13.7",
-    "@types/ws": "^6.0.1",
-    "ws": "^6.2.1"
+    "ws": "^7.2.1"
   },
   "devDependencies": {
-    "tslint": "^5.16.0",
-    "tslint-config-airbnb": "^5.11.1",
-    "typescript": "^3.4.4"
+    "@types/ws": "^6.0.4",
+    "@typescript-eslint/eslint-plugin": "^2.14.0",
+    "@typescript-eslint/parser": "^2.14.0",
+    "eslint": "^6.8.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.19.1",
+    "typescript": "^3.7.4"
   }
 }

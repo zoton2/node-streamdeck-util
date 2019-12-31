@@ -12,9 +12,6 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
@@ -22,17 +19,17 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var events_1 = require("events");
-var ws_1 = __importDefault(require("ws"));
 var url = __importStar(require("url"));
 var util = __importStar(require("util"));
+var ws_1 = __importDefault(require("ws"));
 var StreamDeck = /** @class */ (function (_super) {
     __extends(StreamDeck, _super);
-    /**
-     * New instance of the streamdeck-util helper.
-     */
     function StreamDeck() {
-        var _this = _super.call(this) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.buttonLocations = {};
         _this.init = 0;
         return _this;
@@ -50,12 +47,12 @@ var StreamDeck = /** @class */ (function (_super) {
         // Create WebSocket server.
         this.wss = new ws_1.default.Server({ port: opts.port });
         if (opts.debug) {
-            console.log("[streamdeck-util] WebSocket server created on port " + opts.port + ".");
+            console.log("[streamdeck-util] WebSocket server created on port " + opts.port);
         }
         // Triggered when client connects.
-        this.wss.on('connection', function (ws, req) {
+        this.wss.on('connection', function (socket, req) {
             if (opts.debug) {
-                console.log('[streamdeck-util] WebSocket client connected.');
+                console.log('[streamdeck-util] WebSocket client connected');
             }
             // Get key from request query.
             if (!req.url)
@@ -63,29 +60,28 @@ var StreamDeck = /** @class */ (function (_super) {
             var query = url.parse(req.url, true).query;
             var key = query.key;
             if (opts.debug && key) {
-                console.log("[streamdeck-util] WebSocket client used key " + opts.key + ".");
+                console.log("[streamdeck-util] WebSocket client used key " + opts.key);
             }
             // Disconnect client if key invalid.
             if (!key || key !== opts.key) {
                 if (opts.debug) {
-                    // tslint:disable-next-line: max-line-length
-                    console.log('[streamdeck-util] WebSocket client connection refused due to incorrect key.');
+                    console.log('[streamdeck-util] WebSocket client connection refused due to incorrect key');
                 }
-                ws.close();
+                socket.close();
                 return;
             }
             // Disconnect client if one is already connected.
             if (_this.wsConnection && _this.wsConnection.readyState !== 3) {
                 if (opts.debug) {
-                    // tslint:disable-next-line: max-line-length
-                    console.log('[streamdeck-util] WebSocket client connection refused due to more than 1 connection.');
+                    console.log('[streamdeck-util] WebSocket client connection '
+                        + 'refused due to more than 1 connection');
                 }
-                ws.close();
+                socket.close();
                 return;
             }
-            _this.wsConnection = ws;
+            _this.wsConnection = socket;
             _this.emit('open');
-            ws.on('message', function (message) {
+            socket.on('message', function (message) {
                 var msg = JSON.parse(message);
                 if (msg.type === 'init') {
                     if (opts.debug) {
@@ -101,7 +97,7 @@ var StreamDeck = /** @class */ (function (_super) {
                 }
                 if (msg.type === 'buttonLocationsUpdated') {
                     if (opts.debug) {
-                        console.log('[streamdeck-util] WebSocket received updated button locations.');
+                        console.log('[streamdeck-util] WebSocket received updated button locations');
                     }
                     _this.buttonLocations = msg.data.buttonLocations;
                     if (_this.init < 2) {
@@ -113,23 +109,22 @@ var StreamDeck = /** @class */ (function (_super) {
                 }
                 if (msg.type === 'rawSD') {
                     if (opts.debug) {
-                        // tslint:disable-next-line: max-line-length
                         console.log('[streamdeck-util] WebSocket received raw Stream Deck message:\n%s', util.inspect(msg.data, { depth: null }));
                     }
                     _this.emit(msg.data.event, msg.data);
                     _this.emit('message', msg.data);
                 }
             });
-            ws.on('error', function (err) {
+            socket.on('error', function (err) {
                 if (opts.debug) {
-                    console.log("[streamdeck-util] WebSocket client connection error (" + err + ").");
+                    console.log("[streamdeck-util] WebSocket client connection error (" + err + ")");
                 }
                 _this.emit('error', err);
             });
-            ws.on('close', function (code, reason) {
+            socket.on('close', function (code, reason) {
                 if (opts.debug) {
-                    // tslint:disable-next-line: max-line-length
-                    console.log("[streamdeck-util] WebSocket client connection closed (" + code + ((reason) ? ", " + reason : '') + ").");
+                    console.log('[streamdeck-util] WebSocket client connection closed '
+                        + ("(" + code + ((reason) ? ", " + reason : '') + ")"));
                 }
                 _this.buttonLocations = {};
                 _this.pluginUUID = undefined;

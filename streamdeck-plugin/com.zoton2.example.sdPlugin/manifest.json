@@ -23,7 +23,10 @@
   "Icon": "pluginIcon",
   "URL": "https://github.com/zoton2/node-streamdeck-util",
   "PropertyInspectorPath": "pi.html",
-  "DefaultWindowSize": [400, 200],
+  "DefaultWindowSize": [
+    400,
+    200
+  ],
   "Version": "1.0",
   "SDKVersion": 2,
   "OS": [

@@ -12,7 +12,7 @@ Inside the included plugin, in the default Property Inspector for each action, y
 
 ![Settings Dialog](img/settings-dialog.png)
 
-Currently this package is only designed/tested to work with the full sized Stream Deck with 15 LCD keys; the Stream Deck Mini with 6 LCD keys may also work but not guaranteed.
+Currently this package is only designed/tested to work with the full sized Stream Deck with 15 LCD keys; Stream Deck Mini/Stream Deck XL/Stream Deck Mobile may also work but not guaranteed.
 
 Technically, this package sets up a simple WebSocket server that the barebones plugin in the `streamdeck-plugin` folder is set up to send/receive messages from, essentially bridging the gap between to two instead of directly connecting to their own WebSocket, but being able to code as if it was the same one.
 

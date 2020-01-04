@@ -44,6 +44,7 @@ interface StreamDeck {
     on(event: 'propertyInspectorDidAppear', listener: (data: object) => void): this;
     on(event: 'propertyInspectorDidDisappear', listener: (data: object) => void): this;
     on(event: 'sendToPlugin', listener: (data: object) => void): this;
+    on(event: 'systemDidWakeUp', listener: (data: object) => void): this;
     on(event: string, listener: Function): this;
 }
 declare class StreamDeck extends EventEmitter {

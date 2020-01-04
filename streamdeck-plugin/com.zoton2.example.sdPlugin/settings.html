@@ -1,49 +1,53 @@
 <!DOCTYPE HTML>
 <html>
-	<head>
-		<meta charset="utf-8" />
-		<title>com.zoton2.example Settings Dialog</title>
-		<link rel="stylesheet" href="sdpi.css">
-		<style>
-			body {
-				height: auto;
-				padding: 30px;
-			}
 
-			.sdpi-wrapper {
-				height: auto;
-			}
+<head>
+  <meta charset="utf-8" />
+  <title>com.zoton2.example Settings Dialog</title>
+  <link rel="stylesheet" href="sdpi.css">
+  <style>
+    body {
+      height: auto;
+      padding: 30px;
+    }
 
-			.sdpi-item-label {
-				width: 120px;
-			}
+    .sdpi-wrapper {
+      height: auto;
+    }
 
-			.sdpi-item-value button, button.sdpi-item-value {
-				margin: 0;
-			}
+    .sdpi-item-label {
+      width: 120px;
+    }
 
-			.message summary {
-				text-align: center;
-			}
-		</style>
-		<script src="settings.js"></script>
-	</head>
-	<body>
-		<div class="sdpi-wrapper">
-			<div class="sdpi-item">
-				<div class="sdpi-item-label">Node.js Server URL</div>
-				<input class="sdpi-item-value" id="url">
-			</div>
-			<div class="sdpi-item">
-				<div class="sdpi-item-label">Key</div>
-				<input class="sdpi-item-value" id="key">
-			</div>
-			<div class="sdpi-item">
-				<button class="sdpi-item-value" id="save">Save</button>
-			</div>
-			<details class="message">
-				<summary>Node.js Server Status: <span id="connectionStatus">Checking...</span></summary>
-			</details>
-		</div>
-	</body>
+    .sdpi-item-value button,
+    button.sdpi-item-value {
+      margin: 0;
+    }
+
+    .message summary {
+      text-align: center;
+    }
+  </style>
+  <script src="settings.js"></script>
+</head>
+
+<body>
+  <div class="sdpi-wrapper">
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Node.js Server URL</div>
+      <input class="sdpi-item-value" id="url">
+    </div>
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Key</div>
+      <input class="sdpi-item-value" id="key">
+    </div>
+    <div class="sdpi-item">
+      <button class="sdpi-item-value" id="save">Save</button>
+    </div>
+    <details class="message">
+      <summary>Node.js Server Status: <span id="connectionStatus">Checking...</span></summary>
+    </details>
+  </div>
+</body>
+
 </html>

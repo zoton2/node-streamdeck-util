@@ -70,7 +70,7 @@ class StreamDeck extends EventEmitter {
    * @param opts.port Port that this server will listen on for connections.
    * @param opts.debug Turn on debug logging to help development.
    */
-  listen(opts: {key?: string; port?: number; debug?: boolean} =
+  listen(opts: { key?: string; port?: number; debug?: boolean } =
   { key: 'DEFAULT_KEY', port: 9091, debug: false }): void {
     // Create WebSocket server.
     this.wss = new ws.Server({ port: opts.port });

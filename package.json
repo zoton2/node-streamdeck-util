@@ -29,10 +29,10 @@
     "watch": "tsc -b tsconfig.json -w"
   },
   "dependencies": {
+    "@types/ws": "^6.0.4",
     "ws": "^7.2.1"
   },
   "devDependencies": {
-    "@types/ws": "^6.0.4",
     "@typescript-eslint/eslint-plugin": "^2.14.0",
     "@typescript-eslint/parser": "^2.14.0",
     "eslint": "^6.8.0",

@@ -24,9 +24,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "autofix": "npx eslint --fix --ext .ts src",
-    "build": "npx tsc -b tsconfig.json",
-    "watch": "npx tsc -b tsconfig.json -w"
+    "autofix": "eslint --fix --ext .ts src",
+    "build": "tsc -b tsconfig.json",
+    "watch": "tsc -b tsconfig.json -w"
   },
   "dependencies": {
     "ws": "^7.2.1"

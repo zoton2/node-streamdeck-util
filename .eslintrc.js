@@ -17,7 +17,7 @@ module.exports = {
   rules: {
     'lines-between-class-members': 'off',
     '@typescript-eslint/ban-ts-ignore': 'off',
-    'max-len': ["error", { "code": 100 }],
+    'max-len': ['error', { 'code': 100 }],
     'no-console': 'off',
   },
 };

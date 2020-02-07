@@ -25,6 +25,24 @@ interface TitleParameters {
     titleAlignment: string;
     titleColor: string;
 }
+interface KeyUpDown {
+    action: string;
+    event: string;
+    context: string;
+    device: string;
+    payload: {
+        settings: {
+            [k: string]: any;
+        };
+        coordinates: {
+            column: number;
+            row: number;
+        };
+        state: number;
+        userDesiredState: number;
+        isInMultiAction: boolean;
+    };
+}
 interface StreamDeck {
     on(event: 'open', listener: () => void): this;
     on(event: 'init', listener: () => void): this;
@@ -33,8 +51,8 @@ interface StreamDeck {
     on(event: 'message', listener: (data: object) => void): this;
     on(event: 'didReceiveSettings', listener: (data: object) => void): this;
     on(event: 'didReceiveGlobalSettings', listener: (data: object) => void): this;
-    on(event: 'keyDown', listener: (data: object) => void): this;
-    on(event: 'keyUp', listener: (data: object) => void): this;
+    on(event: 'keyDown', listener: (data: KeyUpDown) => void): this;
+    on(event: 'keyUp', listener: (data: KeyUpDown) => void): this;
     on(event: 'willAppear', listener: (data: object) => void): this;
     on(event: 'willDisappear', listener: (data: object) => void): this;
     on(event: 'titleParametersDidChange', listener: (data: object) => void): this;

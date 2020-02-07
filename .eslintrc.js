@@ -19,5 +19,6 @@ module.exports = {
     '@typescript-eslint/ban-ts-ignore': 'off',
     'max-len': ['error', { 'code': 100 }],
     'no-console': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
   },
 };

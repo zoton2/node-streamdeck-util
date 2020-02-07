@@ -198,6 +198,18 @@ var StreamDeck = /** @class */ (function (_super) {
             },
         });
     };
+    /**
+     * Update the text on all buttons of a cetain action.
+     * @param action Name of the action you're looking for.
+     * @param text What you want to change the text to.
+     */
+    StreamDeck.prototype.setTextOnAllButtonsWithAction = function (action, text) {
+        var _this = this;
+        var buttons = this.findButtonsWithAction(action);
+        buttons.forEach(function (button) {
+            _this.updateButtonText(button.context, text);
+        });
+    };
     return StreamDeck;
 }(events_1.EventEmitter));
 module.exports = StreamDeck;

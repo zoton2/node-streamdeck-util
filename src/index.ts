@@ -241,6 +241,18 @@ class StreamDeck extends EventEmitter {
       },
     });
   }
+
+  /**
+   * Update the text on all buttons of a cetain action.
+   * @param action Name of the action you're looking for.
+   * @param text What you want to change the text to.
+   */
+  setTextOnAllButtonsWithAction(action: string, text: string): void {
+    const buttons = this.findButtonsWithAction(action);
+    buttons.forEach((button) => {
+      this.updateButtonText(button.context, text);
+    });
+  }
 }
 
 export = StreamDeck;

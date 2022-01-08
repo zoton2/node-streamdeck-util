@@ -18,7 +18,7 @@ Technically, this package sets up a simple WebSocket server that the barebones p
 
 ## Install
 
-`$ npm install streamdeck-util --save`
+`$ npm install streamdeck-util`
 
 ### Example
 
@@ -60,10 +60,10 @@ sd.on('error', (err) => {
 sd.on('message', (msg) => {
   console.log('message:');
   console.log(msg);
-  
+
   var buttonLocations = sd.getButtonLocations(); // object, see below
   var pluginUUID = sd.getPluginUUID(); // sometimes needed as context when sending messages
-  
+
   // Send a message back to the Stream Deck application; the send function stringifies it for you.
   sd.send({
     event: 'openUrl',

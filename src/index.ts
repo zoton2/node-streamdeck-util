@@ -3,12 +3,14 @@ import * as url from 'url';
 import * as util from 'util';
 import ws from 'ws';
 
-interface ButtonLocations {
-  [device: string]: {
-    [row: string]: {
-      [column: string]: ButtonObject | null;
-    };
-  };
+interface TitleParameters {
+  fontFamily: string;
+  fontSize: number;
+  fontStyle: string;
+  fontUnderline: boolean;
+  showTitle: boolean;
+  titleAlignment: string;
+  titleColor: string;
 }
 
 interface ButtonObject {
@@ -20,14 +22,12 @@ interface ButtonObject {
   titleParameters: TitleParameters;
 }
 
-interface TitleParameters {
-  fontFamily: string;
-  fontSize: number;
-  fontStyle: string;
-  fontUnderline: boolean;
-  showTitle: boolean;
-  titleAlignment: string;
-  titleColor: string;
+interface ButtonLocations {
+  [device: string]: {
+    [row: string]: {
+      [column: string]: ButtonObject | null;
+    };
+  };
 }
 
 interface KeyUpDown {
@@ -72,7 +72,7 @@ interface StreamDeck {
   on(event: 'sendToPlugin', listener: (data: object) => void): this;
   on(event: 'systemDidWakeUp', listener: (data: object) => void): this;
 
-  on(event: string, listener: Function): this;
+  on(event: string, listener: () => void): this;
 }
 
 class StreamDeck extends EventEmitter {
@@ -133,8 +133,8 @@ class StreamDeck extends EventEmitter {
       this.wsConnection = socket;
       this.emit('open');
 
-      socket.on('message', (message: string) => {
-        const msg = JSON.parse(message);
+      socket.on('message', (message) => {
+        const msg = JSON.parse(message.toString());
         if (msg.type === 'init') {
           if (opts.debug) {
             console.log(`[streamdeck-util] WebSocket received plugin UUID: ${msg.data.pluginUUID}`);

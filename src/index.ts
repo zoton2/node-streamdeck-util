@@ -1,86 +1,25 @@
-import { EventEmitter } from 'events';
 import * as url from 'url';
 import * as util from 'util';
 import ws from 'ws';
+import { ButtonLocations, ButtonObject, StreamDeck as Interface } from '../types';
 
-interface TitleParameters {
-  fontFamily: string;
-  fontSize: number;
-  fontStyle: string;
-  fontUnderline: boolean;
-  showTitle: boolean;
-  titleAlignment: string;
-  titleColor: string;
-}
-
-interface ButtonObject {
-  context: string;
-  action: string;
-  title: string;
-  isInMultiAction: boolean;
-  state: number;
-  titleParameters: TitleParameters;
-}
-
-interface ButtonLocations {
-  [device: string]: {
-    [row: string]: {
-      [column: string]: ButtonObject | null;
-    };
-  };
-}
-
-interface KeyUpDown {
-  action: string;
-  event: string;
-  context: string;
-  device: string;
-  payload: {
-    settings: {
-      [k: string]: any;
-    };
-    coordinates: {
-      column: number;
-      row: number;
-    };
-    state: number;
-    userDesiredState: number;
-    isInMultiAction: boolean;
-  };
-}
-
-interface StreamDeck {
-  on(event: 'open', listener: () => void): this;
-  on(event: 'init', listener: () => void): this;
-  on(event: 'error', listener: (err: Error) => void): this;
-  on(event: 'close', listener: (code: number, reason: string) => void): this;
-
-  on(event: 'message', listener: (data: object) => void): this;
-  // Currently a blanket definition for all events, can be expanded in the future.
-  on(event: 'didReceiveSettings', listener: (data: object) => void): this;
-  on(event: 'didReceiveGlobalSettings', listener: (data: object) => void): this;
-  on(event: 'keyDown', listener: (data: KeyUpDown) => void): this;
-  on(event: 'keyUp', listener: (data: KeyUpDown) => void): this;
-  on(event: 'willAppear', listener: (data: object) => void): this;
-  on(event: 'willDisappear', listener: (data: object) => void): this;
-  on(event: 'titleParametersDidChange', listener: (data: object) => void): this;
-  on(event: 'deviceDidConnect', listener: (data: object) => void): this;
-  on(event: 'applicationDidLaunch', listener: (data: object) => void): this;
-  on(event: 'applicationDidTerminate', listener: (data: object) => void): this;
-  on(event: 'propertyInspectorDidAppear', listener: (data: object) => void): this;
-  on(event: 'propertyInspectorDidDisappear', listener: (data: object) => void): this;
-  on(event: 'sendToPlugin', listener: (data: object) => void): this;
-  on(event: 'systemDidWakeUp', listener: (data: object) => void): this;
-
-  on(event: string, listener: () => void): this;
-}
-
-class StreamDeck extends EventEmitter {
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface StreamDeck extends Interface {}
+class StreamDeck {
   wss: ws.Server | undefined;
   wsConnection: ws | undefined;
   pluginUUID: string | undefined;
-  buttonLocations: ButtonLocations = {};
-  init = 0;
+  debug = false;
+  buttonLocations: ButtonLocations = {}; // is objects within objects a good storage idea?
+  init = 0; // very undescriptive
+
+  private log = {
+    /* eslint-disable no-console */
+    shared: (...msg: unknown[]) => { console.log(`[streamdeck-util] ${msg[0]}`, ...msg.slice(1)); },
+    debug: (...msg: unknown[]) => { if (this.debug) this.log.shared(...msg); },
+    info: (...msg: unknown[]) => { this.log.shared(...msg); },
+    /* eslint-enable */
+  };
 
   /**
    * Start listening for connections from the Stream Deck plugin.
@@ -89,43 +28,39 @@ class StreamDeck extends EventEmitter {
    * @param opts.port Port that this server will listen on for connections.
    * @param opts.debug Turn on debug logging to help development.
    */
-  listen(opts: { key?: string; port?: number; debug?: boolean } =
-  { key: 'DEFAULT_KEY', port: 9091, debug: false }): void {
+  listen(opts: {
+    key?: string;
+    port?: number;
+    debug?: boolean;
+  } = { key: 'DEFAULT_KEY', port: 9091, debug: false }): void {
     // Create WebSocket server.
+    // TODO: kill server if already active
     this.wss = new ws.Server({ port: opts.port });
-    if (opts.debug) {
-      console.log(`[streamdeck-util] WebSocket server created on port ${opts.port}`);
-    }
+    this.debug = opts.debug || false;
+    this.log.debug('WebSocket server created on port %s', opts.port);
 
     // Triggered when client connects.
     this.wss.on('connection', (socket, req) => {
-      if (opts.debug) {
-        console.log('[streamdeck-util] WebSocket client connected');
-      }
+      this.log.debug('WebSocket client connected');
 
       // Get key from request query.
       if (!req.url) return;
       const { query } = url.parse(req.url, true);
       const { key } = query;
-      if (opts.debug && key) {
-        console.log(`[streamdeck-util] WebSocket client used key ${opts.key}`);
+      if (key) {
+        this.log.debug('WebSocket client used key %s', key);
       }
 
       // Disconnect client if key invalid.
       if (!key || key !== opts.key) {
-        if (opts.debug) {
-          console.log('[streamdeck-util] WebSocket client connection refused due to incorrect key');
-        }
+        this.log.debug('WebSocket client connection refused due to incorrect key');
         socket.close();
         return;
       }
 
       // Disconnect client if one is already connected.
       if (this.wsConnection && this.wsConnection.readyState !== 3) {
-        if (opts.debug) {
-          console.log('[streamdeck-util] WebSocket client connection '
-            + 'refused due to more than 1 connection');
-        }
+        this.log.debug('WebSocket client connection refused due to more than 1 connection');
         socket.close();
         return;
       }
@@ -136,9 +71,7 @@ class StreamDeck extends EventEmitter {
       socket.on('message', (message) => {
         const msg = JSON.parse(message.toString());
         if (msg.type === 'init') {
-          if (opts.debug) {
-            console.log(`[streamdeck-util] WebSocket received plugin UUID: ${msg.data.pluginUUID}`);
-          }
+          this.log.debug('WebSocket received plugin UUID: %s', msg.data.pluginUUID);
           this.pluginUUID = msg.data.pluginUUID;
           if (this.init < 2) {
             this.init += 1;
@@ -148,9 +81,7 @@ class StreamDeck extends EventEmitter {
           }
         }
         if (msg.type === 'buttonLocationsUpdated') {
-          if (opts.debug) {
-            console.log('[streamdeck-util] WebSocket received updated button locations');
-          }
+          this.log.debug('WebSocket received updated button locations');
           this.buttonLocations = msg.data.buttonLocations;
           if (this.init < 2) {
             this.init += 1;
@@ -160,29 +91,25 @@ class StreamDeck extends EventEmitter {
           }
         }
         if (msg.type === 'rawSD') {
-          if (opts.debug) {
-            console.log(
-              '[streamdeck-util] WebSocket received raw Stream Deck message:\n%s',
-              util.inspect(msg.data, { depth: null }),
-            );
-          }
+          this.log.debug(
+            'WebSocket received raw Stream Deck message:\n%s',
+            util.inspect(msg.data, { depth: null }),
+          );
           this.emit(msg.data.event, msg.data);
           this.emit('message', msg.data);
         }
       });
 
       socket.on('error', (err) => {
-        if (opts.debug) {
-          console.log(`[streamdeck-util] WebSocket client connection error (${err})`);
-        }
+        this.log.debug('WebSocket client connection error (%s)', err);
         this.emit('error', err);
       });
 
       socket.on('close', (code, reason) => {
-        if (opts.debug) {
-          console.log('[streamdeck-util] WebSocket client connection closed '
-            + `(${code}${(reason) ? `, ${reason}` : ''})`);
-        }
+        this.log.debug(
+          'WebSocket client connection closed (%s)',
+          `${code}${(reason) ? `, ${reason}` : ''}`,
+        );
         this.buttonLocations = {};
         this.pluginUUID = undefined;
         this.wsConnection = undefined;
@@ -195,7 +122,7 @@ class StreamDeck extends EventEmitter {
   /**
    * Gets the buttonLocations object as received from the Stream Deck plugin.
    */
-  getButtonLocations(): object {
+  getButtonLocations(): ButtonLocations {
     return this.buttonLocations;
   }
 
@@ -212,7 +139,7 @@ class StreamDeck extends EventEmitter {
    * Data will be stringified for you.
    * @param data Object formatted to send to the Stream Deck WebSocket connection.
    */
-  send(data: object): boolean {
+  send(data: { [k: string]: unknown }): boolean {
     if (this.wsConnection && this.wsConnection.readyState === 1) {
       this.wsConnection.send(JSON.stringify(data));
       return true;

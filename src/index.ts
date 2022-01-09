@@ -1,11 +1,38 @@
+import { EventEmitter } from 'stream';
 import * as url from 'url';
 import * as util from 'util';
 import ws from 'ws';
-import { ButtonLocations, ButtonObject, StreamDeck as Interface } from '../types';
+import { ButtonLocations, ButtonObject, KeyUpDown } from '../types';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface StreamDeck extends Interface {}
-class StreamDeck {
+/* eslint-disable max-len */
+interface StreamDeck {
+  on(event: 'open', listener: () => void): this;
+  on(event: 'init', listener: () => void): this;
+  on(event: 'error', listener: (err: Error) => void): this;
+  on(event: 'close', listener: (code: number, reason: string) => void): this;
+
+  on(event: 'message', listener: (data: { [k: string]: unknown }) => void): this;
+  // Currently a blanket definition for all events, can be expanded in the future.
+  on(event: 'didReceiveSettings', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'didReceiveGlobalSettings', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'keyDown', listener: (data: KeyUpDown) => void): this;
+  on(event: 'keyUp', listener: (data: KeyUpDown) => void): this;
+  on(event: 'willAppear', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'willDisappear', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'titleParametersDidChange', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'deviceDidConnect', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'applicationDidLaunch', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'applicationDidTerminate', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'propertyInspectorDidAppear', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'propertyInspectorDidDisappear', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'sendToPlugin', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'systemDidWakeUp', listener: (data: { [k: string]: unknown }) => void): this;
+
+  on(event: string, listener: () => void): this;
+}
+/* eslint-enable */
+
+class StreamDeck extends EventEmitter {
   wss: ws.Server | undefined;
   wsConnection: ws | undefined;
   pluginUUID: string | undefined;

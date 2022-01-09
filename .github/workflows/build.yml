@@ -1,0 +1,103 @@
+name: Build(/Release)
+
+on:
+  push:
+    branches: [ master ]
+
+  release:
+    types: [ published ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Setup some Node.js stuff
+    - name: Node.js setup
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+        registry-url: https://registry.npmjs.org/
+
+    # Set NPM cache options
+    - name: Set NPM cache
+      uses: actions/cache@v2
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    # Update NPM to the latest version
+    - name: Update NPM installation
+      run: npm install -g npm@latest
+
+    # Checkout the main branch of this repository with full depth
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets['GITHUB_TOKEN'] }}
+        ref: master
+        fetch-depth: 0
+
+    # Set the local git user config to use the GitHub Actions bot account
+    - name: Set local git config user details
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+
+    # Recheckout the main branch (to solve issues with merging in a moment)
+    - name: (Re)checkout main branch
+      run: git checkout master
+
+    # Bump version (if releasing)
+    - name: Bump version (if releasing)
+      if: ${{ github.event_name == 'release' }}
+      run: |
+        npm version --no-git-tag-version ${{ github.event.release.tag_name }}
+        git commit -m ${{ github.event.release.tag_name }} -a
+        git push
+
+    # Checkout build branche and merge the main into build
+    # This can "fail" if the build branch doesn't exist, but we should continue anyway
+    - name: Checkout build branch and merge main into build
+      continue-on-error: true
+      run: |
+        git checkout build
+        git merge master
+
+    # Install NPM dependencies
+    - name: Install NPM dependencies
+      run: npm ci
+
+    # Actually build everything
+    - name: Build
+      run: |
+        npm run clean
+        npm run build
+
+    # NPM publish version (if releasing)
+    - name: NPM publish
+      if: ${{ github.event_name == 'release' }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets['NPM_TOKEN'] }}
+      run: npm publish --tag ${{ fromJSON('["latest", "next"]')[github.event.release.prerelease] }}
+
+    # Commit newly built files
+    # This can "fail" if there are no newly changed/built files, but we should continue anyway
+    - name: Commit built files
+      id: commit
+      continue-on-error: true
+      run: |
+        git add -f dist
+        git commit -m "Built files" -a
+
+    # Pushes the built files
+    - name: Push built files
+      #if: ${{ steps.commit.outcome == 'success' }}
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets['GITHUB_TOKEN'] }}
+        branch: build

@@ -21,11 +21,13 @@
   },
   "license": "MIT",
   "author": "zoton2",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "autofix": "eslint --fix --ext .ts src",
     "build": "tsc -b tsconfig.json",
+    "clean": "trash node_modules/.cache && trash dist",
+    "test-server": "ts-node test/server.ts",
     "watch": "tsc -b tsconfig.json -w"
   },
   "dependencies": {
@@ -33,11 +35,16 @@
     "ws": "^8.4.0"
   },
   "devDependencies": {
+    "@types/node": "^16.11.19",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
     "eslint": "^8.6.0",
     "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-airbnb-typescript": "^16.1.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.4",
+    "trash-cli": "^5.0.0",
+    "ts-node": "^10.4.0",
     "typescript": "^4.5.4"
   }
 }

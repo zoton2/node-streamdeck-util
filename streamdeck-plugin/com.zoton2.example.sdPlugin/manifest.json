@@ -2,10 +2,10 @@
   "Actions": [
     {
       "Name": "Example",
-      "Icon": "actionIcon",
+      "Icon": "img/actionIcon",
       "States": [
         {
-          "Image": "actionIcon",
+          "Image": "img/actionIcon",
           "TitleAlignment": "middle",
           "Title": "Example"
         }
@@ -20,7 +20,7 @@
   "CodePath": "backend.html",
   "Description": "Barebones plugin to be used with streamdeck-util.",
   "Name": "node-streamdeck-util",
-  "Icon": "pluginIcon",
+  "Icon": "img/pluginIcon",
   "URL": "https://github.com/zoton2/node-streamdeck-util",
   "PropertyInspectorPath": "pi.html",
   "DefaultWindowSize": [

@@ -35,8 +35,8 @@ var sd = new StreamDeck();
 // port - the port the connection will use, defaults to 9091
 // debug - if you want to print debug messages, useful for development
 sd.listen({
-  key: 'EXAMPLE_KEY',
-  port: 1234,
+  key: 'DEFAULT_KEY',
+  port: 9091,
   debug: true
 });
 

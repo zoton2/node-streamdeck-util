@@ -96,7 +96,6 @@ function connectToSDWS() {
 
   sdWS.addEventListener('message', e => {
     const data = JSON.parse(e.data);
-    console.log(data);
     const { event, device, deviceInfo, action, context, payload } = data;
 
     // Create button location storage for this device if empty; usually from a deviceDidConnect message.

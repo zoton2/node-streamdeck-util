@@ -38,12 +38,12 @@ sd.on('message', (msg) => {
   var pluginUUID = sd.getPluginUUID(); // sometimes needed as context when sending messages
 
   // Send a message back to the Stream Deck application; the send function stringifies it for you.
-  sd.send({
+  /* sd.send({
     event: 'openUrl',
     payload: {
       url: 'https://www.elgato.com'
     }
-  });
+  }); */
 });
 
 // You can directly listen for Stream Deck's events by their name if you want to.

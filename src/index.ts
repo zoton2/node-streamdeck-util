@@ -37,8 +37,8 @@ class StreamDeck extends EventEmitter {
   wsConnection: ws | undefined;
   pluginUUID: string | undefined;
   debug = false;
-  buttonLocations: ButtonLocations = {}; // is objects within objects a good storage idea?
-  init = 0; // very undescriptive
+  buttonLocations: ButtonLocations = {};
+  init = 0; // Can be 0, 1 or 2 depending on what initialisation step we are at.
 
   private log = {
     /* eslint-disable no-console */
@@ -62,9 +62,11 @@ class StreamDeck extends EventEmitter {
     port?: number;
     debug?: boolean;
   } = { key: 'DEFAULT_KEY', port: 9091, debug: false }): void {
-    // Create WebSocket server.
-    // TODO: kill server if already active
-    this.wss = new ws.Server({ port: opts.port });
+    if (this.wss) {
+      this.wss.close(); // If server is already active, close it
+      this.wss.removeAllListeners();
+    }
+    this.wss = new ws.Server({ port: opts.port }); // Create WebSocket server
     this.debug = opts.debug || false;
     this.log.debug('WebSocket server created on port %s', opts.port);
 
@@ -76,9 +78,7 @@ class StreamDeck extends EventEmitter {
       if (!req.url) return;
       const { query } = url.parse(req.url, true);
       const { key } = query;
-      if (key) {
-        this.log.debug('WebSocket client used key %s', key);
-      }
+      if (key) this.log.debug('WebSocket client used key %s', key);
 
       // Disconnect client if key invalid.
       if (!key || key !== opts.key) {
@@ -104,9 +104,7 @@ class StreamDeck extends EventEmitter {
           this.pluginUUID = msg.data.pluginUUID;
           if (this.init < 2) {
             this.init += 1;
-            if (this.init >= 2) {
-              this.emit('init');
-            }
+            if (this.init >= 2) this.emit('init');
           }
         }
         if (msg.type === 'buttonLocationsUpdated') {
@@ -114,9 +112,7 @@ class StreamDeck extends EventEmitter {
           this.buttonLocations = msg.data.buttonLocations;
           if (this.init < 2) {
             this.init += 1;
-            if (this.init >= 2) {
-              this.emit('init');
-            }
+            if (this.init >= 2) this.emit('init');
           }
         }
         if (msg.type === 'rawSD') {
@@ -134,7 +130,7 @@ class StreamDeck extends EventEmitter {
         this.emit('error', err);
       });
 
-      socket.on('close', (code, reason) => {
+      socket.once('close', (code, reason) => {
         this.log.debug(
           'WebSocket client connection closed (%s)',
           `${code}${(reason) ? `, ${reason}` : ''}`,
@@ -143,6 +139,7 @@ class StreamDeck extends EventEmitter {
         this.pluginUUID = undefined;
         this.wsConnection = undefined;
         this.init = 0;
+        socket.removeAllListeners();
         this.emit('close', code, reason);
       });
     });
@@ -166,6 +163,7 @@ class StreamDeck extends EventEmitter {
    * Sends message to the Stream Deck WebSocket connection.
    * as documented on https://developer.elgato.com/documentation/stream-deck/sdk/events-sent/
    * Data will be stringified for you.
+   * Will return true/false depending on if message was able to be sent.
    * @param data Object formatted to send to the Stream Deck WebSocket connection.
    */
   send(data: { [k: string]: unknown }): boolean {

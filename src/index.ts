@@ -42,7 +42,9 @@ class StreamDeck extends EventEmitter {
 
   private log = {
     /* eslint-disable no-console */
-    shared: (...msg: unknown[]) => { console.log(`[streamdeck-util] ${msg[0]}`, ...msg.slice(1)); },
+    shared: (...msg: unknown[]) => {
+      console.log(`[node-streamdeck-util] ${msg[0]}`, ...msg.slice(1));
+    },
     debug: (...msg: unknown[]) => { if (this.debug) this.log.shared(...msg); },
     info: (...msg: unknown[]) => { this.log.shared(...msg); },
     /* eslint-enable */

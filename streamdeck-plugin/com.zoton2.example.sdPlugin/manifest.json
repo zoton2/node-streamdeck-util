@@ -18,7 +18,7 @@
   "Author": "zoton2",
   "Category": "node-streamdeck-util",
   "CodePath": "backend.html",
-  "Description": "Barebones plugin to be used with streamdeck-util.",
+  "Description": "Barebones plugin to be used with node-streamdeck-util.",
   "Name": "node-streamdeck-util",
   "Icon": "img/pluginIcon",
   "URL": "https://github.com/zoton2/node-streamdeck-util",

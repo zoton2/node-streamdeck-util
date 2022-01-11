@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 var sdWS;
 var serverWS;
 var serverWSReconnTimeout;

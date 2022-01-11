@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 var sdWS;
 var connectSocketData = {};
 var globalSettings = {};

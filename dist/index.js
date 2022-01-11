@@ -30,11 +30,13 @@ class StreamDeck extends stream_1.EventEmitter {
     constructor() {
         super(...arguments);
         this.debug = false;
-        this.buttonLocations = {}; // is objects within objects a good storage idea?
-        this.init = 0; // very undescriptive
+        this.buttonLocations = {};
+        this.init = 0; // Can be 0, 1 or 2 depending on what initialisation step we are at.
         this.log = {
             /* eslint-disable no-console */
-            shared: (...msg) => { console.log(`[streamdeck-util] ${msg[0]}`, ...msg.slice(1)); },
+            shared: (...msg) => {
+                console.log(`[node-streamdeck-util] ${msg[0]}`, ...msg.slice(1));
+            },
             debug: (...msg) => { if (this.debug)
                 this.log.shared(...msg); },
             info: (...msg) => { this.log.shared(...msg); },
@@ -49,9 +51,11 @@ class StreamDeck extends stream_1.EventEmitter {
      * @param opts.debug Turn on debug logging to help development.
      */
     listen(opts = { key: 'DEFAULT_KEY', port: 9091, debug: false }) {
-        // Create WebSocket server.
-        // TODO: kill server if already active
-        this.wss = new ws_1.default.Server({ port: opts.port });
+        if (this.wss) {
+            this.wss.close(); // If server is already active, close it
+            this.wss.removeAllListeners();
+        }
+        this.wss = new ws_1.default.Server({ port: opts.port }); // Create WebSocket server
         this.debug = opts.debug || false;
         this.log.debug('WebSocket server created on port %s', opts.port);
         // Triggered when client connects.
@@ -62,9 +66,8 @@ class StreamDeck extends stream_1.EventEmitter {
                 return;
             const { query } = url.parse(req.url, true);
             const { key } = query;
-            if (key) {
+            if (key)
                 this.log.debug('WebSocket client used key %s', key);
-            }
             // Disconnect client if key invalid.
             if (!key || key !== opts.key) {
                 this.log.debug('WebSocket client connection refused due to incorrect key');
@@ -86,9 +89,8 @@ class StreamDeck extends stream_1.EventEmitter {
                     this.pluginUUID = msg.data.pluginUUID;
                     if (this.init < 2) {
                         this.init += 1;
-                        if (this.init >= 2) {
+                        if (this.init >= 2)
                             this.emit('init');
-                        }
                     }
                 }
                 if (msg.type === 'buttonLocationsUpdated') {
@@ -96,9 +98,8 @@ class StreamDeck extends stream_1.EventEmitter {
                     this.buttonLocations = msg.data.buttonLocations;
                     if (this.init < 2) {
                         this.init += 1;
-                        if (this.init >= 2) {
+                        if (this.init >= 2)
                             this.emit('init');
-                        }
                     }
                 }
                 if (msg.type === 'rawSD') {
@@ -111,12 +112,13 @@ class StreamDeck extends stream_1.EventEmitter {
                 this.log.debug('WebSocket client connection error (%s)', err);
                 this.emit('error', err);
             });
-            socket.on('close', (code, reason) => {
+            socket.once('close', (code, reason) => {
                 this.log.debug('WebSocket client connection closed (%s)', `${code}${(reason) ? `, ${reason}` : ''}`);
                 this.buttonLocations = {};
                 this.pluginUUID = undefined;
                 this.wsConnection = undefined;
                 this.init = 0;
+                socket.removeAllListeners();
                 this.emit('close', code, reason);
             });
         });
@@ -137,6 +139,7 @@ class StreamDeck extends stream_1.EventEmitter {
      * Sends message to the Stream Deck WebSocket connection.
      * as documented on https://developer.elgato.com/documentation/stream-deck/sdk/events-sent/
      * Data will be stringified for you.
+     * Will return true/false depending on if message was able to be sent.
      * @param data Object formatted to send to the Stream Deck WebSocket connection.
      */
     send(data) {

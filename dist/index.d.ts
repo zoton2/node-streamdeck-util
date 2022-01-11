@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { EventEmitter } from 'stream';
 import ws from 'ws';
-import { ButtonLocations, ButtonObject, KeyUpDown } from '../types';
+import { ButtonLocations, ButtonObject, EventReceive } from '../types';
 interface StreamDeck {
     on(event: 'open', listener: () => void): this;
     on(event: 'init', listener: () => void): this;
@@ -16,8 +16,8 @@ interface StreamDeck {
     on(event: 'didReceiveGlobalSettings', listener: (data: {
         [k: string]: unknown;
     }) => void): this;
-    on(event: 'keyDown', listener: (data: KeyUpDown) => void): this;
-    on(event: 'keyUp', listener: (data: KeyUpDown) => void): this;
+    on(event: 'keyDown', listener: (data: EventReceive.KeyDown) => void): this;
+    on(event: 'keyUp', listener: (data: EventReceive.KeyUp) => void): this;
     on(event: 'willAppear', listener: (data: {
         [k: string]: unknown;
     }) => void): this;
@@ -30,10 +30,16 @@ interface StreamDeck {
     on(event: 'deviceDidConnect', listener: (data: {
         [k: string]: unknown;
     }) => void): this;
+    on(event: 'deviceDidDisconnect', listener: (data: {
+        [k: string]: unknown;
+    }) => void): this;
     on(event: 'applicationDidLaunch', listener: (data: {
         [k: string]: unknown;
     }) => void): this;
     on(event: 'applicationDidTerminate', listener: (data: {
+        [k: string]: unknown;
+    }) => void): this;
+    on(event: 'systemDidWakeUp', listener: (data: {
         [k: string]: unknown;
     }) => void): this;
     on(event: 'propertyInspectorDidAppear', listener: (data: {
@@ -45,10 +51,6 @@ interface StreamDeck {
     on(event: 'sendToPlugin', listener: (data: {
         [k: string]: unknown;
     }) => void): this;
-    on(event: 'systemDidWakeUp', listener: (data: {
-        [k: string]: unknown;
-    }) => void): this;
-    on(event: string, listener: () => void): this;
 }
 declare class StreamDeck extends EventEmitter {
     wss: ws.Server | undefined;
@@ -82,6 +84,7 @@ declare class StreamDeck extends EventEmitter {
      * Sends message to the Stream Deck WebSocket connection.
      * as documented on https://developer.elgato.com/documentation/stream-deck/sdk/events-sent/
      * Data will be stringified for you.
+     * Will return true/false depending on if message was able to be sent.
      * @param data Object formatted to send to the Stream Deck WebSocket connection.
      */
     send(data: {

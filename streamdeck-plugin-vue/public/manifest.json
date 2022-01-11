@@ -1,0 +1,45 @@
+{
+  "Actions": [
+    {
+      "Name": "Example",
+      "Icon": "img/actionIcon",
+      "States": [
+        {
+          "Image": "img/actionIcon",
+          "TitleAlignment": "middle",
+          "Title": "Example"
+        }
+      ],
+      "SupportedInMultiActions": false,
+      "Tooltip": "Example action needed to run the plugin.",
+      "UUID": "com.zoton2.example.action"
+    }
+  ],
+  "Author": "zoton2",
+  "Category": "node-streamdeck-util",
+  "CodePath": "backend.html",
+  "Description": "Barebones plugin to be used with node-streamdeck-util.",
+  "Name": "node-streamdeck-util",
+  "Icon": "img/pluginIcon",
+  "URL": "https://github.com/zoton2/node-streamdeck-util",
+  "PropertyInspectorPath": "pi.html",
+  "DefaultWindowSize": [
+    400,
+    200
+  ],
+  "Version": "1.0",
+  "SDKVersion": 2,
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "5"
+  }
+}

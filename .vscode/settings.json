@@ -1,3 +1,6 @@
 {
+  "eslint.workingDirectories": [
+    "streamdeck-plugin-vue"
+  ],
   "typescript.tsdk": "node_modules\\typescript\\lib"
 }

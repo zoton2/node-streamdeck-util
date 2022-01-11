@@ -3,3 +3,5 @@ node_modules/**/*
 types/**/*
 dist/**/*
 test/**/*
+streamdeck-plugin/**/*
+vetur.config.js

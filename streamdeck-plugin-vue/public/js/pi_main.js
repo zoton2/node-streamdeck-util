@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 var sdWS;
 var connectSocketData = {};
 var globalSettings = {};
@@ -50,11 +52,3 @@ function connectElgatoStreamDeckSocket(port, pluginUUID, registerEvent, info, ac
   connectSocketData.actionInfo = actionInfo;
   connectToSDWS();
 }
-
-// Wait for the document to fully load before doing this stuff.
-document.addEventListener('DOMContentLoaded', e => {
-  // Listen for "Open Settings Dialog" button to be clicked.
-  document.getElementById('settingsButton').addEventListener('click', e => {
-    window.open('settings.html');
-  });
-});

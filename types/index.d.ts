@@ -25,21 +25,28 @@ export interface ButtonLocations {
   };
 }
 
-export interface KeyUpDown {
-  action: string;
-  event: string;
-  context: string;
-  device: string;
-  payload: {
-    settings: {
-      [k: string]: unknown;
+/**
+ * Documentation reference:
+ * https://developer.elgato.com/documentation/stream-deck/sdk/events-received/
+ */
+export namespace EventReceive {
+  interface KeyDown {
+    action: string;
+    event: 'keyDown';
+    context: string;
+    device: string;
+    payload: {
+      settings: { [k: string]: unknown };
+      coordinates: {
+        column: number;
+        row: number;
+      };
+      state: number;
+      userDesiredState: 0 | 1;
+      isInMultiAction: boolean;
     };
-    coordinates: {
-      column: number;
-      row: number;
-    };
-    state: number;
-    userDesiredState: number;
-    isInMultiAction: boolean;
-  };
+  }
+  interface KeyUp extends Omit<KeyDown, 'event'> {
+    event: 'keyUp';
+  }
 }

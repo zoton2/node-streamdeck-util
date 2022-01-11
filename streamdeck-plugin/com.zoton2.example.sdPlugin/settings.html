@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <title>com.zoton2.example Settings Dialog</title>
-  <link rel="stylesheet" href="sdpi.css">
+  <link rel="stylesheet" href="css/sdpi.css">
   <style>
     body {
       height: auto;
@@ -19,13 +19,17 @@
       width: 120px;
     }
 
-    .sdpi-item-value button,
-    button.sdpi-item-value {
-      margin: 0;
+    .sdpi-item-value {
+      margin-right: 0;
+      min-width: unset !important;
     }
 
     .message summary {
       text-align: center;
+    }
+
+    #save {
+      margin: 0;
     }
   </style>
   <script src="settings.js"></script>

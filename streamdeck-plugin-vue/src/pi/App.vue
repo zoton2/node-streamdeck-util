@@ -11,11 +11,36 @@
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator';
+import PropertyInspector from './pi';
 
 @Component
 export default class extends Vue {
+  pi!: PropertyInspector;
+
+  beforeCreate(): void {
+    this.pi = new PropertyInspector();
+    window.connectElgatoStreamDeckSocket = (
+      inPort: string,
+      inPropertyInspectorUUID: string,
+      inRegisterEvent: string,
+      inInfo: string,
+      inActionInfo: string,
+    ) => {
+      this.pi.connectElgatoStreamDeckSocket(
+        inPort,
+        inPropertyInspectorUUID,
+        inRegisterEvent,
+        inInfo,
+        inActionInfo,
+      );
+    };
+    window.gotCallbackFromWindow = (data: { url: string, key: string }) => {
+      this.pi.gotCallbackFromWindow(data);
+    };
+  }
+
   openSettings(): void {
-    window.open('settings.html');
+    this.pi.openSettings();
   }
 }
 </script>

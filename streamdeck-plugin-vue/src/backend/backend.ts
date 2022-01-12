@@ -134,6 +134,16 @@ class Backend extends EventEmitter {
   }
 
   /**
+   * Helper function to send messages to the Stream Deck WebSocket server if connection is ready.
+   */
+  sendToSDWS(data: unknown): void {
+    if (this.sdWS && this.sdWS.readyState === 1) {
+      const str = typeof data !== 'string' ? JSON.stringify(data) : data;
+      this.sdWS.send(str);
+    }
+  }
+
+  /**
    * node-streamdeck-util connection.
    */
   connectToServerWS(): void {
@@ -163,15 +173,13 @@ class Backend extends EventEmitter {
       console.warn('Connection to node-streamdeck-util server closed (%s)', e.code);
       this.toggleBackendConnectionStatus(false);
       clearTimeout(this.serverWSReconnTimeout);
-      this.serverWSReconnTimeout = setTimeout(this.connectToServerWS, 5000);
+      this.serverWSReconnTimeout = setTimeout(() => { this.connectToServerWS(); }, 5000);
     }, { once: true });
 
     // Relays any messages sent from the node-streamdeck-util server to the main socket.
     this.serverWS.addEventListener('message', (e) => {
       const { data } = e;
-      if (this.sdWS && this.sdWS.readyState === 1) {
-        this.sdWS.send(data);
-      }
+      this.sendToSDWS(data);
     });
   }
 

@@ -30,6 +30,14 @@ function sendToServerWS(type, data) {
   }
 }
 
+// Helper function to send messages to the Stream Deck WebSocket server if connection is ready.
+function sendToSDWS(data) {
+  if (this.sdWS && this.sdWS.readyState === 1) {
+    const str = typeof data !== 'string' ? JSON.stringify(data) : data;
+    this.sdWS.send(str);
+  }
+}
+
 // node-streamdeck-util connection.
 function connectToServerWS() {
   if (serverWS) serverWS.close(); // Close current connection if one is active.
@@ -64,9 +72,7 @@ function connectToServerWS() {
   // Relays any messages sent from the node-streamdeck-util server to the main socket.
   serverWS.addEventListener('message', e => {
     const data = e.data;
-    if (sdWS && sdWS.readyState === 1) {
-      sdWS.send(data);
-    }
+    sendToSDWS(data);
   });
 }
 

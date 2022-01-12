@@ -129,6 +129,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-streamdeck-plugin/Release/com.zoton2.example.streamDeckPlugin
+com.zoton2.example.streamDeckPlugin
 DistributionTool.exe
 streamdeck-plugin-vue/com.zoton2.example.sdPlugin

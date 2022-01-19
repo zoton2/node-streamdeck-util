@@ -1,6 +1,6 @@
 {
   "name": "streamdeck-util",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Node.js package to help your Node.js scripts easily interface with an official Stream Deck application plugin.",
   "keywords": [
     "deck",

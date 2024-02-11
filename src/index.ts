@@ -1,43 +1,43 @@
 import { EventEmitter } from 'stream';
 import * as url from 'url';
 import * as util from 'util';
-import ws from 'ws';
+import { Server } from 'socket.io';
+import type { SocketId } from 'socket.io-adapter';
 import { ButtonLocations, ButtonObject, EventReceive } from '../types';
 
 /* eslint-disable max-len */
 interface StreamDeck {
-  on(event: 'open', listener: () => void): this;
-  on(event: 'init', listener: () => void): this;
-  on(event: 'error', listener: (err: Error) => void): this;
-  on(event: 'close', listener: (code: number, reason: string) => void): this;
+  on(event: 'open', listener: (socketId: SocketId) => void): this;
+  on(event: 'init', listener: (socketId: SocketId) => void): this;
+  on(event: 'error', listener: (socketId: SocketId, err: Error) => void): this;
+  on(event: 'close', listener: (socketId: SocketId, code: number, reason: string) => void): this;
 
-  on(event: 'message', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'message', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
   // Currently a blanket definition for all events, can be expanded in the future.
-  on(event: 'didReceiveSettings', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'didReceiveGlobalSettings', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'keyDown', listener: (data: EventReceive.KeyDown) => void): this;
-  on(event: 'keyUp', listener: (data: EventReceive.KeyUp) => void): this;
-  on(event: 'willAppear', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'willDisappear', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'titleParametersDidChange', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'deviceDidConnect', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'deviceDidDisconnect', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'applicationDidLaunch', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'applicationDidTerminate', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'systemDidWakeUp', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'propertyInspectorDidAppear', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'propertyInspectorDidDisappear', listener: (data: { [k: string]: unknown }) => void): this;
-  on(event: 'sendToPlugin', listener: (data: { [k: string]: unknown }) => void): this;
+  on(event: 'didReceiveSettings', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'didReceiveGlobalSettings', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'keyDown', listener: (socketId: SocketId, data: EventReceive.KeyDown) => void): this;
+  on(event: 'keyUp', listener: (socketId: SocketId, data: EventReceive.KeyUp) => void): this;
+  on(event: 'willAppear', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'willDisappear', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'titleParametersDidChange', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'deviceDidConnect', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'deviceDidDisconnect', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'applicationDidLaunch', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'applicationDidTerminate', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'systemDidWakeUp', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'propertyInspectorDidAppear', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'propertyInspectorDidDisappear', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
+  on(event: 'sendToPlugin', listener: (socketId: SocketId, data: { [k: string]: unknown }) => void): this;
 }
 /* eslint-enable */
 
 class StreamDeck extends EventEmitter {
-  wss: ws.Server | undefined;
-  wsConnection: ws | undefined;
-  pluginUUID: string | undefined;
+  wss: Server | undefined;
   debug = false;
-  buttonLocations: ButtonLocations = {};
-  init = 0; // Can be 0, 1 or 2 depending on what initialisation step we are at.
+  buttonLocations: Map<SocketId, ButtonLocations> = new Map();
+  // Can be 0, 1 or 2 depending on what initialisation step we are at.
+  initStates = new Map<SocketId, number>();
 
   private log = {
     /* eslint-disable no-console */
@@ -65,53 +65,59 @@ class StreamDeck extends EventEmitter {
       this.wss.close(); // If server is already active, close it
       this.wss.removeAllListeners();
     }
-    this.wss = new ws.Server({ port: opts.port }); // Create WebSocket server
+    this.wss = new Server(opts.port); // Create WebSocket server
     this.debug = opts.debug || false;
     this.log.debug('WebSocket server created on port %s', opts.port);
 
-    // Triggered when client connects.
-    this.wss.on('connection', (socket, req) => {
-      this.log.debug('WebSocket client connected');
+    this.wss.use((socket, next) => {
+      const { request } = socket;
 
       // Get key from request query.
-      if (!req.url) return;
-      const { query } = url.parse(req.url, true);
+      if (!request.url) {
+        socket.disconnect(true);
+        return next(new Error('No request URL'));
+      }
+      const { query } = url.parse(request.url, true);
       const { key } = query;
       if (key) this.log.debug('WebSocket client used key %s', key);
 
       // Disconnect client if key invalid.
       if (!key || key !== opts.key) {
         this.log.debug('WebSocket client connection refused due to incorrect key');
-        socket.close();
-        return;
+        socket.disconnect(true);
+        return next(new Error('Key is invalid'));
       }
 
-      // Disconnect client if one is already connected.
-      if (this.wsConnection && this.wsConnection.readyState !== 3) {
-        this.log.debug('WebSocket client connection refused due to more than 1 connection');
-        socket.close();
-        return;
-      }
+      return next();
+    });
 
-      this.wsConnection = socket;
-      this.emit('open');
+    // Triggered when client connects.
+    this.wss.on('connection', (socket) => {
+      this.log.debug('WebSocket client connected');
+
+      this.initStates.set(socket.id, 0);
+
+      this.emit('open', socket.id);
 
       socket.on('message', (message) => {
         const msg = JSON.parse(message.toString());
         if (msg.type === 'init') {
-          this.log.debug('WebSocket received plugin UUID: %s', msg.data.pluginUUID);
-          this.pluginUUID = msg.data.pluginUUID;
-          if (this.init < 2) {
-            this.init += 1;
-            if (this.init >= 2) this.emit('init');
+          let initState = this.initStates.get(socket.id) || 0;
+          this.log.debug('WebSocket received plugin UUID: %s', socket.id);
+          if (initState < 2) {
+            initState += 1;
+            this.initStates.set(socket.id, initState);
+            if (initState >= 2) this.emit('init', socket.id);
           }
         }
         if (msg.type === 'buttonLocationsUpdated') {
+          let initState = this.initStates.get(socket.id) || 0;
           this.log.debug('WebSocket received updated button locations');
-          this.buttonLocations = msg.data.buttonLocations;
-          if (this.init < 2) {
-            this.init += 1;
-            if (this.init >= 2) this.emit('init');
+          this.buttonLocations.set(socket.id, msg.data.buttonLocations);
+          if (initState < 2) {
+            initState += 1;
+            this.initStates.set(socket.id, initState);
+            if (initState >= 2) this.emit('init', socket.id);
           }
         }
         if (msg.type === 'rawSD') {
@@ -119,14 +125,14 @@ class StreamDeck extends EventEmitter {
             'WebSocket received raw Stream Deck message:\n%s',
             util.inspect(msg.data, { depth: null }),
           );
-          this.emit(msg.data.event, msg.data);
-          this.emit('message', msg.data);
+          this.emit(msg.data.event, socket.id, msg.data);
+          this.emit('message', socket.id, msg.data);
         }
       });
 
       socket.on('error', (err) => {
         this.log.debug('WebSocket client connection error (%s)', err);
-        this.emit('error', err);
+        this.emit('error', socket.id, err);
       });
 
       socket.once('close', (code, reason) => {
@@ -134,28 +140,34 @@ class StreamDeck extends EventEmitter {
           'WebSocket client connection closed (%s)',
           `${code}${(reason) ? `, ${reason}` : ''}`,
         );
-        this.buttonLocations = {};
-        this.pluginUUID = undefined;
-        this.wsConnection = undefined;
-        this.init = 0;
+        this.buttonLocations = new Map();
+        this.initStates = new Map();
         socket.removeAllListeners();
-        this.emit('close', code, reason);
+        this.emit('close', socket.id, code, reason);
       });
     });
   }
 
   /**
-   * Gets the buttonLocations object as received from the Stream Deck plugin.
+   * Gets all buttonLocations object as received from the Stream Deck plugin.
    */
-  getButtonLocations(): ButtonLocations {
+  getButtonLocations(): Map<SocketId, ButtonLocations> {
     return this.buttonLocations;
   }
 
   /**
+   * Gets the buttonLocations object as received from the Stream Deck plugin.
+   */
+  getButtonLocationsFor(socket: SocketId): ButtonLocations {
+    return this.buttonLocations.get(socket) || {};
+  }
+
+  /**
    * Gets the pluginUUID if set.
+   * @deprecated
    */
   getPluginUUID(): string | undefined {
-    return this.pluginUUID;
+    return undefined;
   }
 
   /**
@@ -166,8 +178,8 @@ class StreamDeck extends EventEmitter {
    * @param data Object formatted to send to the Stream Deck WebSocket connection.
    */
   send(data: { [k: string]: unknown }): boolean {
-    if (this.wsConnection && this.wsConnection.readyState === 1) {
-      this.wsConnection.send(JSON.stringify(data));
+    if (this.wss) {
+      this.wss.send(JSON.stringify(data));
       return true;
     }
     return false;
@@ -176,8 +188,8 @@ class StreamDeck extends EventEmitter {
   /**
    * Get raw WebSocket connection to the plugin backend if available.
    */
-  getWSConnection(): ws | undefined {
-    return this.wsConnection;
+  getSocket(): Server | undefined {
+    return this.wss;
   }
 
   /**
@@ -186,16 +198,20 @@ class StreamDeck extends EventEmitter {
    */
   findButtonsWithAction(action: string): ButtonObject[] {
     const buttons: ButtonObject[] = [];
-    Object.keys(this.buttonLocations).forEach((device) => {
-      Object.keys(this.buttonLocations[device]).forEach((row) => {
-        Object.keys(this.buttonLocations[device][row]).forEach((column) => {
-          const button = this.buttonLocations[device][row][column];
-          if (button && button.action === action) {
-            buttons.push(button);
-          }
+
+    for (const location of this.buttonLocations.values()) {
+      Object.keys(location).forEach((device) => {
+        Object.keys(location[device]).forEach((row) => {
+          Object.keys(location[device][row]).forEach((column) => {
+            const button = location[device][row][column];
+            if (button && button.action === action) {
+              buttons.push(button);
+            }
+          });
         });
       });
-    });
+    }
+
     return buttons;
   }
 

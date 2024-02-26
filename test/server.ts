@@ -51,4 +51,9 @@ sd.on('message', (socketId, msg) => {
 sd.on('keyDown', (socketId, msg) => {
   console.log('keyDown (socket %s):', socketId);
   console.log(msg);
+
+  sd.send({
+    "event": "showOk",
+    "context": msg.context,
+  });
 });

@@ -70,15 +70,7 @@ class StreamDeck extends EventEmitter {
     this.log.debug('WebSocket server created on port %s', opts.port);
 
     this.wss.use((socket, next) => {
-      const { request } = socket;
-
-      // Get key from request query.
-      if (!request.url) {
-        socket.disconnect(true);
-        return next(new Error('No request URL'));
-      }
-      const { query } = url.parse(request.url, true);
-      const { key } = query;
+      const { key } = socket.handshake.auth;
       if (key) this.log.debug('WebSocket client used key %s', key);
 
       // Disconnect client if key invalid.
@@ -102,6 +94,7 @@ class StreamDeck extends EventEmitter {
       socket.on('message', (message) => {
         const msg = JSON.parse(message.toString());
         if (msg.type === 'init') {
+          // Use plugin message.data.pluginUUID instead (somehow, it's not set anywhere else)
           let initState = this.initStates.get(socket.id) || 0;
           this.log.debug('WebSocket received plugin UUID: %s', socket.id);
           if (initState < 2) {
@@ -140,8 +133,8 @@ class StreamDeck extends EventEmitter {
           'WebSocket client connection closed (%s)',
           `${code}${(reason) ? `, ${reason}` : ''}`,
         );
-        this.buttonLocations = new Map();
-        this.initStates = new Map();
+        this.buttonLocations.delete(socket.id);
+        this.initStates.delete(socket.id);
         socket.removeAllListeners();
         this.emit('close', socket.id, code, reason);
       });
@@ -172,7 +165,7 @@ class StreamDeck extends EventEmitter {
 
   /**
    * Sends message to the Stream Deck WebSocket connection.
-   * as documented on https://developer.elgato.com/documentation/stream-deck/sdk/events-sent/
+   * as documented on https://docs.elgato.com/sdk/plugins/events-sent
    * Data will be stringified for you.
    * Will return true/false depending on if message was able to be sent.
    * @param data Object formatted to send to the Stream Deck WebSocket connection.

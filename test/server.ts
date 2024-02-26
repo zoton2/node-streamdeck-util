@@ -14,28 +14,29 @@ sd.listen({
 });
 
 // When the connection between the plugin and this instance is open.
-sd.on('open', () => {
-  console.log('open');
+sd.on('open', (socketId) => {
+  console.log('open (socket %s)', socketId);
 });
 
 // If the connection between the plugin and this instance is closed.
-sd.on('close', (code, reason) => {
-  console.log('close: %s, %s', code, reason);
+sd.on('close', (socketId, code, reason) => {
+  console.log('close: %s, %s (socket %s)', code, reason, socketId);
 });
 
 // If there are any errors on the connection between the plugin and this instance.
-sd.on('error', (err) => {
-  console.log('error:');
+sd.on('error', (socketId, err) => {
+  console.log('error (socket %s):', socketId);
   console.log(err);
 });
 
 // Listens for the Stream Deck's events.
-sd.on('message', (msg) => {
-  console.log('message:');
+sd.on('message', (socketId, msg) => {
+  console.log('message (socket %s):', socketId);
   console.log(msg);
 
   var buttonLocations = sd.getButtonLocations(); // object, see below
-  var pluginUUID = sd.getPluginUUID(); // sometimes needed as context when sending messages
+
+  console.log(buttonLocations);
 
   // Send a message back to the Stream Deck application; the send function stringifies it for you.
   /* sd.send({
@@ -47,7 +48,12 @@ sd.on('message', (msg) => {
 });
 
 // You can directly listen for Stream Deck's events by their name if you want to.
-sd.on('keyDown', (msg) => {
-  console.log('keyDown:');
+sd.on('keyDown', (socketId, msg) => {
+  console.log('keyDown (socket %s):', socketId);
   console.log(msg);
+
+  sd.send({
+    "event": "showOk",
+    "context": msg.context,
+  });
 });

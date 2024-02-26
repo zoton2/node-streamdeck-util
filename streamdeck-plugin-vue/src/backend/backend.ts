@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import { io, Socket } from 'socket.io-client';
 
 /* eslint-disable max-len, @typescript-eslint/no-explicit-any */
 interface Backend {
@@ -8,8 +9,7 @@ interface Backend {
 
 class Backend extends EventEmitter {
   sdWS!: WebSocket;
-  serverWS!: WebSocket;
-  serverWSReconnTimeout!: number;
+  serverWS!: Socket;
   connectSocketData: {
     inPort?: string,
     inPluginUUID?: string,
@@ -148,37 +148,37 @@ class Backend extends EventEmitter {
    */
   connectToServerWS(): void {
     if (this.serverWS) this.serverWS.close(); // Close current connection if one is active.
-    clearTimeout(this.serverWSReconnTimeout);
 
-    this.serverWS = new WebSocket(`${this.globalSettings.url}/?key=${this.globalSettings.key}`);
+    this.serverWS = io(this.globalSettings.url!, {
+      auth: {
+        key: this.globalSettings.key,
+      },
+    });
     console.info(
       'Connecting to node-streamdeck-util server using %s and key %s',
       this.globalSettings.url,
       this.globalSettings.key,
     );
 
-    this.serverWS.addEventListener('error', (e) => {
+    this.serverWS.on('connect_error', (e) => {
       console.warn('Error occured on the node-streamdeck-util server connection:', e);
     });
 
     // Initalise node-streamdeck-util server connection.
-    this.serverWS.addEventListener('open', () => {
+    this.serverWS.on('connect', () => {
       console.info('Connection to node-streamdeck-util server successful');
       this.sendToServerWS('init', { pluginUUID: this.connectSocketData.inPluginUUID });
       this.sendToServerWS('buttonLocationsUpdated', { buttonLocations: this.buttonLocations });
       this.toggleBackendConnectionStatus(true);
-    }, { once: true });
+    });
 
-    this.serverWS.addEventListener('close', (e) => {
-      console.warn('Connection to node-streamdeck-util server closed (%s)', e.code);
+    this.serverWS.on('disconnect', (e) => {
+      console.warn('Connection to node-streamdeck-util server closed (%s)', e);
       this.toggleBackendConnectionStatus(false);
-      clearTimeout(this.serverWSReconnTimeout);
-      this.serverWSReconnTimeout = setTimeout(() => { this.connectToServerWS(); }, 5000);
-    }, { once: true });
+    });
 
     // Relays any messages sent from the node-streamdeck-util server to the main socket.
-    this.serverWS.addEventListener('message', (e) => {
-      const { data } = e;
+    this.serverWS.on('message', (data) => {
       this.sendToSDWS(data);
     });
   }
@@ -187,7 +187,7 @@ class Backend extends EventEmitter {
    * Helper function to send messages to the node-streamdeck-util server if connection is ready.
    */
   sendToServerWS(type: string, data: unknown): void {
-    if (this.serverWS && this.serverWS.readyState === 1) {
+    if (this.serverWS && this.serverWS.connected) {
       this.serverWS.send(JSON.stringify({ type, data }));
     }
   }

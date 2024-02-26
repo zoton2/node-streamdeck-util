@@ -132,3 +132,4 @@ dist
 com.zoton2.example.streamDeckPlugin
 DistributionTool.exe
 streamdeck-plugin-vue/com.zoton2.example.sdPlugin
+.idea/

@@ -1,5 +1,4 @@
 import { EventEmitter } from 'stream';
-import * as url from 'url';
 import * as util from 'util';
 import { Server } from 'socket.io';
 import type { SocketId } from 'socket.io-adapter';

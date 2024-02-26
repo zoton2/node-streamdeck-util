@@ -10,7 +10,6 @@ interface Backend {
 class Backend extends EventEmitter {
   sdWS!: WebSocket;
   serverWS!: Socket;
-  serverWSReconnTimeout!: number;
   connectSocketData: {
     inPort?: string,
     inPluginUUID?: string,
@@ -149,7 +148,6 @@ class Backend extends EventEmitter {
    */
   connectToServerWS(): void {
     if (this.serverWS) this.serverWS.close(); // Close current connection if one is active.
-    // clearTimeout(this.serverWSReconnTimeout);
 
     this.serverWS = io(this.globalSettings.url!, {
       auth: {
@@ -177,8 +175,6 @@ class Backend extends EventEmitter {
     this.serverWS.on('disconnect', (e) => {
       console.warn('Connection to node-streamdeck-util server closed (%s)', e);
       this.toggleBackendConnectionStatus(false);
-      // clearTimeout(this.serverWSReconnTimeout);
-      // this.serverWSReconnTimeout = setTimeout(() => { this.connectToServerWS(); }, 5000);
     });
 
     // Relays any messages sent from the node-streamdeck-util server to the main socket.
